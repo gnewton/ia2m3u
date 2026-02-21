@@ -34,4 +34,7 @@ go.work.sum
 # emacs backup files
 *~
 
-
+*.json
+cache.db
+\#*\#
+cmd/ia2m3u/ia2m3u
