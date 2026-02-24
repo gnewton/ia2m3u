@@ -14,6 +14,13 @@ var db *bolt.DB
 
 var DBBucketName = "ia"
 
+type Cache struct {
+	db           *bolt.DB
+	filename     string
+	DBBucketName string
+	ttlSeconds   int64
+}
+
 func initializeCache(dbFileName string) error {
 	if db != nil {
 		log.Fatal("DB is not nil; only run initializeCache() once!")
@@ -36,7 +43,7 @@ func initializeCache(dbFileName string) error {
 
 }
 
-func getKey(url string) (io.Reader, bool) {
+func getKey(url string) []byte {
 	var v []byte
 
 	if err := db.View(func(tx *bolt.Tx) error {
@@ -49,13 +56,38 @@ func getKey(url string) (io.Reader, bool) {
 
 	if v != nil {
 		log.Println("**************************** Cache hit", url)
-		var buf2 bytes.Buffer
-		err := gunzipper(&buf2, v)
+		var buf bytes.Buffer
+		err := gunzipper2(&buf, v)
 		if err != nil {
 			log.Fatal(err)
 		}
 		//return bytes.NewReader(buf2), true
-		return &buf2, true
+		return buf.Bytes()
+	}
+
+	return nil
+}
+
+func getKey2(url string) (io.Reader, bool) {
+	var v []byte
+
+	if err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(DBBucketName))
+		v = b.Get([]byte(url))
+		return nil
+	}); err != nil {
+		log.Fatal(err)
+	}
+
+	if v != nil {
+		log.Println("**************************** Cache hit", url)
+		var buf bytes.Buffer
+		err := gunzipper2(&buf, v)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//return bytes.NewReader(buf2), true
+		return &buf, true
 	}
 	return nil, false
 }
@@ -82,7 +114,15 @@ func gzipper(w io.Writer, data []byte) {
 	}
 }
 
-func gunzipper(w io.Writer, data []byte) error {
+func gunzipper(data []byte) error {
+	gr, err := gzip.NewReader(bytes.NewBuffer(data))
+	defer gr.Close()
+
+	data, err = ioutil.ReadAll(gr)
+	return err
+}
+
+func gunzipper2(w io.Writer, data []byte) error {
 	gr, err := gzip.NewReader(bytes.NewBuffer(data))
 	defer gr.Close()
 

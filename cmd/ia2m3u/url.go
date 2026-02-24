@@ -2,43 +2,51 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"time"
 )
 
-func getUrlBody(url string, cachePrefix *string, useCache bool) (io.Reader, error) {
+func getUrlJSON(url string, cachePrefix *string, useCache bool, items *searchItems, cursor string) error {
 
 	if db == nil {
 		log.Fatal("ERROR: db = nil")
 	}
 
+	var body []byte
+
 	if useCache {
-		if value, ok := getKey(url); ok {
-			return value, nil
+		if body = getKey(url); body != nil {
+			log.Println("KEY HIT")
+		} else {
+
+			log.Println(">>>>>>>>> CACHE MISS")
+			res, err := http.Get(url)
+			if err != nil {
+				log.Println(url)
+				log.Println(err)
+				log.Fatal(err)
+			}
+
+			body, err = io.ReadAll(res.Body)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			addToCache(url, body)
+			time.Sleep(2 * time.Second)
 		}
 	}
 
-	res, err := http.Get(url)
-	if err != nil {
-		log.Println(url)
-		log.Println(err)
-		return nil, err
-	}
-
-	b, err := io.ReadAll(res.Body)
+	log.Println("Hello")
+	dec := json.NewDecoder(bytes.NewBuffer(body))
+	err := dec.Decode(items)
 	if err != nil {
 		log.Println(err)
-		return nil, err
 	}
 
-	if useCache {
-		addToCache(url, b)
-	}
-
-	time.Sleep(2 * time.Second)
-
-	return bytes.NewReader(b), err
+	return err
 
 }
