@@ -3,13 +3,15 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"time"
 )
 
-func getUrlJSON(url string, cachePrefix *string, useCache bool, items *searchItems, cursor string) error {
+func getUrlJSON(client *http.Client, url string, cachePrefix *string, useCache bool, items *scrapeItems, cursor string, cache *Cache) error {
 
 	if db == nil {
 		log.Fatal("ERROR: db = nil")
@@ -18,13 +20,37 @@ func getUrlJSON(url string, cachePrefix *string, useCache bool, items *searchIte
 	var body []byte
 
 	if useCache {
-		if body = getKey(url); body != nil {
+		if body = cache.GetKey(url); body != nil {
 			log.Println("KEY HIT")
 		} else {
 
 			log.Println(">>>>>>>>> CACHE MISS")
-			res, err := http.Get(url)
+			//res, err := http.Get(url)
+
+			req, err := http.NewRequest(http.MethodGet, url, nil)
 			if err != nil {
+				fmt.Printf("client: could not create request: %s\n", err)
+				log.Fatal()
+			}
+
+			res, err := client.Do(req)
+			if err != nil {
+				fmt.Printf("client: error making http request: %s\n", err)
+				log.Fatal()
+			}
+
+			if res.StatusCode != 200 {
+				body, err = io.ReadAll(res.Body)
+				if err == nil {
+					log.Println("Error. Response body:")
+					log.Println("--------------------------------------------------------------")
+					log.Println(string(body))
+					log.Println("--------------------------------------------------------------")
+				}
+				return fmt.Errorf("Failing http code %d (!200)", res.StatusCode)
+			}
+			if err != nil {
+				log.Println("Status code", res.StatusCode)
 				log.Println(url)
 				log.Println(err)
 				log.Fatal(err)
@@ -35,8 +61,8 @@ func getUrlJSON(url string, cachePrefix *string, useCache bool, items *searchIte
 				log.Println(err)
 				return err
 			}
-			addToCache(url, body)
-			time.Sleep(2 * time.Second)
+			cache.AddToCache(url, body)
+			time.Sleep(4 * time.Second)
 		}
 	}
 
@@ -49,4 +75,27 @@ func getUrlJSON(url string, cachePrefix *string, useCache bool, items *searchIte
 
 	return err
 
+}
+
+// Production HTTP client with advanced configuration
+func createProductionClient() *http.Client {
+	transport := &http.Transport{
+		MaxIdleConns:        100,              // Maximum idle connections
+		MaxIdleConnsPerHost: 10,               // Maximum idle connections per host
+		IdleConnTimeout:     90 * time.Second, // Idle connection timeout
+		DisableCompression:  false,            // Enable compression
+		DisableKeepAlives:   false,            // Enable keep-alives
+	}
+
+	return &http.Client{
+		Transport: transport,
+		Timeout:   30 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// Custom redirect handling
+			if len(via) >= 10 {
+				return errors.New("stopped after 10 redirects")
+			}
+			return nil
+		},
+	}
 }

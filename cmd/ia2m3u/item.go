@@ -2,7 +2,7 @@ package main
 
 var baseUrl = "https://archive.org/metadata/"
 
-type TopLevelMetadata struct {
+type ItemTopLevelMetadata struct {
 	Created         int64        `json:"created"`
 	D1              string       `json:"d1"`
 	Date            string       `json:"date"`

@@ -3,11 +3,14 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	bolt "go.etcd.io/bbolt"
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
+	"time"
 )
 
 var db *bolt.DB
@@ -21,12 +24,34 @@ type Cache struct {
 	ttlSeconds   int64
 }
 
-func initializeCache(dbFileName string) error {
+func (c *Cache) InitializeCache(dbFileName string) error {
 	if db != nil {
 		log.Fatal("DB is not nil; only run initializeCache() once!")
 	}
 
 	var err error
+
+	fileInfo, err := os.Stat(dbFileName)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			log.Fatal(err)
+		}
+	}
+	// Gives the modification time
+	if fileInfo != nil {
+		modificationTime := fileInfo.ModTime()
+		if time.Since(modificationTime) > time.Hour {
+			err = os.Remove(dbFileName)
+			if err != nil {
+				log.Println("Unable to delete file:", dbFileName)
+				return err
+			}
+		}
+
+	}
+
+	//log.Println(elapsed)
+	//log.Fatal(elapsed > time.Hour)
 
 	db, err = bolt.Open(dbFileName, 0600, nil)
 	if err != nil {
@@ -43,7 +68,7 @@ func initializeCache(dbFileName string) error {
 
 }
 
-func getKey(url string) []byte {
+func (c *Cache) GetKey(url string) []byte {
 	var v []byte
 
 	if err := db.View(func(tx *bolt.Tx) error {
@@ -68,7 +93,7 @@ func getKey(url string) []byte {
 	return nil
 }
 
-func getKey2(url string) (io.Reader, bool) {
+func (c *Cache) GetKey2(url string) (io.Reader, bool) {
 	var v []byte
 
 	if err := db.View(func(tx *bolt.Tx) error {
@@ -92,7 +117,7 @@ func getKey2(url string) (io.Reader, bool) {
 	return nil, false
 }
 
-func addToCache(url string, body []byte) error {
+func (c *Cache) AddToCache(url string, body []byte) error {
 	log.Println("    Cache add:", url)
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(DBBucketName))

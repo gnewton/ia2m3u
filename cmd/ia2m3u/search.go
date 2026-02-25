@@ -3,233 +3,84 @@ package main
 import (
 	//"encoding/json"
 	"errors"
-	"fmt"
 	//"reflect"
 	//"io"
 	"log"
-	"strconv"
 )
 
-// Search api (scrape): https://archive.org/help/aboutsearch.htm
+// func search(query string, maxNumResults int, chunkSize int, items []searchItem, cache *Cache) ([]searchItem, int, error) {
+// 	if chunkSize < 0 {
+// 		return nil, 0, fmt.Errorf("Num results cannot be < 0")
+// 	}
 
-var IA_SearchBaseURL = "https://archive.org/services/search/v1/scrape?"
+// 	if chunkSize > 0 && chunkSize < 100 {
+// 		return nil, 0, fmt.Errorf("Requested num results must be > 100")
+// 	}
 
-const MAX_RESULTS = 5000
+// 	if chunkSize > 5000 {
+// 		return nil, -1, fmt.Errorf("ChunkSize number of results requested exceeded")
+// 	}
 
-type searchItems struct {
-	Count          int    `json:"count"`
-	Cursor         string `json:"cursor"`
-	CursorPrevious string `json:"previous"`
-	Items          []searchItem
-	Total          int `json:"total"`
-}
+// 	if items == nil {
+// 		tmp := new([]searchItem)
+// 		items = *tmp
+// 	}
 
-type searchItem struct {
-	AddedDate              string      `json:"addeddate"`
-	AvgRating_Raw          interface{} `json:"avg_rating"`
-	AvgRating              []int
-	BTIH                   string      `json:"btih"`
-	BackupLocation_Raw     interface{} `json:"backup_location"`
-	BackupLocation         []string
-	Collection             []string    `json:"collection"`
-	CollectionsOrdered     string      `json:"collections_ordered"`
-	CurateDate             string      `json:"curatedate"`
-	CurateNote_Raw         interface{} `json:"curatenote"`
-	CurateNote             []string
-	CurateState            string      `json:"curatestate"`
-	Curation_Raw           interface{} `json:"curation"`
-	Curation               []string
-	Curator                string      `json:"curator"`
-	Date_Raw               interface{} `json:"date"`
-	Date                   []string
-	Description            interface{} `json:"description"`
-	Downloads              int         `json:"downloads"`
-	ExternalMetadataUpdate string      `json:"external_metadata_update"`
-	FilesCount             int         `json:"files_count"`
-	Format_Raw             interface{} `json:"format"`
-	Format                 []string
-	//Format              []string    `json:"format"`
-	Identifier          string      `json:"identifier"`
-	IndexDate           string      `json:"indexdate"`
-	ItemSize            int         `json:"item_size"`
-	LicenseURL          string      `json:"licenseurl"`
-	ListMemberships_Raw interface{} `json:"list_memberships"`
-	ListMemberships     []string
-	// https://pkg.go.dev/encoding/json#RawMessage
-	MatchDateAoustid     string      `json:"match_date_acoustid"`
-	MediaType            string      `json:"mediatype"`
-	Month                int         `json:"month"`
-	NoArchiveTorrent     string      `json:"noarchivetorrent"`
-	NumFavorites         int         `json:"num_favorites"`
-	OaiUpdateDate_Raw    interface{} `json:"oai_updatedate"`
-	OaiUpdateDate        []string
-	PrimaryCollection    string      `json:"primary_collection"`
-	PublicDate           string      `json:"publicdate"`
-	ReportedServer       string      `json:"reported_server"`
-	ReviewBody_Raw       interface{} `json:"reviewbody"`
-	ReviewBody           []string
-	ReviewData           []string    `json:"review_data"`
-	Reviewer_Raw         interface{} `json:"reviewer"`
-	Reviewer             []string
-	ReviewerItemName_Raw interface{} `json:"reviewer_itemname"`
-	ReviewerItemname     []string
-	Scanner_Raw          interface{} `json:"scanner"`
-	Scanner              []string
-	Subject_Raw          interface{} `json:"subject"`
-	Subject              []string
-	SubjectCount         int         `json:"subject_count"`
-	Stars_Raw            interface{} `json:"stars"`
-	Stars                []int
-	Title_Raw            interface{} `json:"title"`
-	Title                []string
-	Week                 int         `json:"week"`
-	Year_Raw             interface{} `json:"year"`
-	Year                 []int
-}
+// 	cursor := ""
 
-func search3(query string, maxNumResults int, chunkSize int) (chan []searchItem, error) {
+// 	if chunkSize != 0 {
+// 		query = query + "&count=" + strconv.Itoa(chunkSize)
+// 	}
 
-	if chunkSize < 0 {
-		return nil, fmt.Errorf("Num results cannot be < 0")
-	}
+// 	count := 0
+// 	var totalResults int
 
-	if chunkSize > 0 && chunkSize < 100 {
-		return nil, fmt.Errorf("Requested num results must be > 100")
-	}
+// 	for {
+// 		if totalResults >= maxNumResults {
+// 			break
+// 		}
+// 		log.Println("-------------------New search---------------------")
+// 		if count >= maxNumResults {
+// 			log.Println("A")
+// 			break
+// 		}
 
-	if chunkSize > 5000 {
-		return nil, fmt.Errorf("ChunkSize number of results requested exceeded")
-	}
+// 		var tmpItems scrapeItems
+// 		url := IA_ScrapeBaseURL + query
 
-	c := make(chan []searchItem, 2)
+// 		if cursor != "" {
+// 			url = url + "&cursor=" + cursor
+// 			log.Println("-----------Cursor:", cursor)
+// 		}
 
-	go func() {
-		cursor := ""
+// 		log.Println("search", url)
 
-		if chunkSize != 0 {
-			query = query + "&count=" + strconv.Itoa(chunkSize)
-		}
+// 		err := getUrlJSON(url, nil, true, &tmpItems, cursor, cache)
+// 		if err != nil {
+// 			return nil, 0, err
+// 		}
 
-		count := 0
+// 		err = cleanSearchItems(tmpItems.Items)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
 
-		for {
-			log.Println("-------------------New search---------------------")
-			if count >= maxNumResults {
-				log.Println("A")
-				break
-			}
-			log.Println("00000 Count:", count, maxNumResults)
+// 		count += tmpItems.Count
+// 		totalResults = tmpItems.Total
 
-			var tmpItems searchItems
-			url := IA_SearchBaseURL + query
+// 		log.Println(len(tmpItems.Items))
 
-			if cursor != "" {
-				url = url + "&cursor=" + cursor
-				log.Println("-----------Cursor:", cursor)
-			}
+// 		items = append(items, tmpItems.Items...)
 
-			log.Println("search", url)
+// 		if tmpItems.Cursor == "" {
+// 			log.Println("-----------EMPTY Cursor********************************************")
+// 			break
+// 		}
+// 		cursor = tmpItems.Cursor
 
-			err := getUrlJSON(url, nil, true, &tmpItems, cursor)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			err = cleanSearchItems(tmpItems.Items)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			count += tmpItems.Count
-
-			log.Println(len(tmpItems.Items))
-
-			if tmpItems.Cursor == "" {
-				log.Println("-----------EMPTY Cursor********************************************")
-				break
-			}
-			cursor = tmpItems.Cursor
-			c <- tmpItems.Items
-
-		}
-		close(c)
-	}()
-	return c, nil
-}
-
-func search(query string, maxNumResults int, chunkSize int, items []searchItem) ([]searchItem, int, error) {
-	if chunkSize < 0 {
-		return nil, 0, fmt.Errorf("Num results cannot be < 0")
-	}
-
-	if chunkSize > 0 && chunkSize < 100 {
-		return nil, 0, fmt.Errorf("Requested num results must be > 100")
-	}
-
-	if chunkSize > 5000 {
-		return nil, -1, fmt.Errorf("ChunkSize number of results requested exceeded")
-	}
-
-	if items == nil {
-		tmp := new([]searchItem)
-		items = *tmp
-	}
-
-	cursor := ""
-
-	if chunkSize != 0 {
-		query = query + "&count=" + strconv.Itoa(chunkSize)
-	}
-
-	count := 0
-	var totalResults int
-
-	for {
-		if totalResults >= maxNumResults {
-			break
-		}
-		log.Println("-------------------New search---------------------")
-		if count >= maxNumResults {
-			log.Println("A")
-			break
-		}
-
-		var tmpItems searchItems
-		url := IA_SearchBaseURL + query
-
-		if cursor != "" {
-			url = url + "&cursor=" + cursor
-			log.Println("-----------Cursor:", cursor)
-		}
-
-		log.Println("search", url)
-
-		err := getUrlJSON(url, nil, true, &tmpItems, cursor)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		err = cleanSearchItems(tmpItems.Items)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		count += tmpItems.Count
-		totalResults = tmpItems.Total
-
-		log.Println(len(tmpItems.Items))
-
-		items = append(items, tmpItems.Items...)
-
-		if tmpItems.Cursor == "" {
-			log.Println("-----------EMPTY Cursor********************************************")
-			break
-		}
-		cursor = tmpItems.Cursor
-
-	}
-	return items, totalResults, nil
-}
+// 	}
+// 	return items, totalResults, nil
+// }
 
 type StringFields struct {
 	s    *[]string
