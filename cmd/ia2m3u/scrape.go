@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strconv"
 )
 
@@ -81,20 +82,16 @@ type searchItem struct {
 	Year                 []int
 }
 
-func scrapeChannel(query string, maxNumResults int, chunkSize int, c chan []searchItem, cache *Cache) error {
+func ScrapeSearch(query string, maxNumResults int, chunkSize int, c chan []searchItem, client *http.Client, cache *Cache) error {
 
-	if chunkSize < 0 {
-		return fmt.Errorf("Num results cannot be < 0")
-	}
-
-	if chunkSize > 0 && chunkSize < 100 {
+	if chunkSize < 100 {
 		return fmt.Errorf("Requested num results must be > 100")
 	}
 
 	if chunkSize > 5000 {
 		return fmt.Errorf("ChunkSize number of results requested exceeded")
 	}
-	client := createProductionClient()
+
 	go func() {
 		cursor := ""
 
@@ -120,12 +117,12 @@ func scrapeChannel(query string, maxNumResults int, chunkSize int, c chan []sear
 
 			log.Println("search", url)
 
-			err := getUrlJSON(client, url, nil, true, &tmpItems, cursor, cache)
+			err := getUrlJSON(client, url, true, &tmpItems, cursor, cache)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			err = cleanSearchItems(tmpItems.Items)
+			err = fixSearchItemFields(tmpItems.Items)
 			if err != nil {
 				log.Fatal(err)
 			}

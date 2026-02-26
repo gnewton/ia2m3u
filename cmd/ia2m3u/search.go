@@ -87,8 +87,8 @@ type StringFields struct {
 	sRaw interface{}
 }
 
-func cleanSearchItems(items []searchItem) error {
-	log.Println(" cleanSearchItems")
+func fixSearchItemFields(items []searchItem) error {
+
 	for i, _ := range items {
 		item := &(items[i])
 		//ints := []*[]int{&item.AvgRating}
@@ -106,53 +106,17 @@ func cleanSearchItems(items []searchItem) error {
 		}
 
 		//cleanInts(ints, intsRaw)
-		err := cleanStrings(sf)
+		err := fixStrings(sf)
 		if err != nil {
 			log.Printf("------ %#v\n", item)
 			log.Println(err)
 			log.Fatal(item.Identifier)
 		}
-
-		if false {
-			// ---------------
-			if item.AvgRating_Raw != nil {
-				avgi, ok := item.AvgRating_Raw.(int)
-				if ok {
-					item.AvgRating = []int{avgi}
-				} else {
-					avgai, ok := item.AvgRating_Raw.([]int)
-					if ok {
-						item.AvgRating = avgai
-					} else {
-						return errors.New("AvgRating_Raw not int or []int")
-					}
-				}
-			}
-
-			if item.Title_Raw != nil {
-				titlei, ok := item.Title_Raw.(string)
-				if ok {
-					//log.Println("FFFFFFFFFFFFFFFFFFFFFFFFF", titlei)
-					item.Title = []string{titlei}
-					//log.Println(item.Title)
-				} else {
-					titleai, ok := item.Title_Raw.([]string)
-					if ok {
-						//log.Println("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZ", titleai)
-						item.Title = titleai
-					} else {
-
-						return errors.New("Title_Raw not string or []string")
-					}
-				}
-			}
-			//items[i] = item
-		}
 	}
 	return nil
 }
 
-func cleanInts(ints [][]int, intsRaw []interface{}) error {
+func fixInts(ints [][]int, intsRaw []interface{}) error {
 	for i := 0; i < len(ints); i++ {
 		// ---------------
 		intv, ok := intsRaw[i].(int)
@@ -170,7 +134,7 @@ func cleanInts(ints [][]int, intsRaw []interface{}) error {
 	return nil
 }
 
-func cleanStrings(sf []StringFields) error {
+func fixStrings(sf []StringFields) error {
 	for i := 0; i < len(sf); i++ {
 		if sf[i].sRaw != nil {
 			if v, ok := sf[i].sRaw.(string); ok {

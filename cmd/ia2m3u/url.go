@@ -11,20 +11,15 @@ import (
 	"time"
 )
 
-func getUrlJSON(client *http.Client, url string, cachePrefix *string, useCache bool, items *scrapeItems, cursor string, cache *Cache) error {
-
-	if db == nil {
-		log.Fatal("ERROR: db = nil")
-	}
+// func getUrlJSON(client *http.Client, url string, cachePrefix *string, useCache bool, items *scrapeItems, cursor string, cache *Cache) error {
+func getUrlJSON(client *http.Client, url string, useCache bool, items interface{}, cursor string, cache *Cache) error {
 
 	var body []byte
 
 	if useCache {
 		if body = cache.GetKey(url); body != nil {
-			log.Println("KEY HIT")
-		} else {
 
-			log.Println(">>>>>>>>> CACHE MISS")
+		} else {
 			//res, err := http.Get(url)
 
 			req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -62,25 +57,24 @@ func getUrlJSON(client *http.Client, url string, cachePrefix *string, useCache b
 				return err
 			}
 			cache.AddToCache(url, body)
-			time.Sleep(4 * time.Second)
+			//time.Sleep(400 * time.Millisecond)
 		}
 	}
 
-	log.Println("Hello")
 	dec := json.NewDecoder(bytes.NewBuffer(body))
 	err := dec.Decode(items)
+
 	if err != nil {
 		log.Println(err)
+		log.Fatal(err)
 	}
-
 	return err
 
 }
 
-// Production HTTP client with advanced configuration
-func createProductionClient() *http.Client {
+func newClient() *http.Client {
 	transport := &http.Transport{
-		MaxIdleConns:        100,              // Maximum idle connections
+		MaxIdleConns:        10,               // Maximum idle connections
 		MaxIdleConnsPerHost: 10,               // Maximum idle connections per host
 		IdleConnTimeout:     90 * time.Second, // Idle connection timeout
 		DisableCompression:  false,            // Enable compression
@@ -89,7 +83,7 @@ func createProductionClient() *http.Client {
 
 	return &http.Client{
 		Transport: transport,
-		Timeout:   30 * time.Second,
+		Timeout:   60 * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			// Custom redirect handling
 			if len(via) >= 10 {

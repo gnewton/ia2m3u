@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-var db *bolt.DB
-
 var DBBucketName = "ia"
 
 type Cache struct {
@@ -25,7 +23,7 @@ type Cache struct {
 }
 
 func (c *Cache) InitializeCache(dbFileName string) error {
-	if db != nil {
+	if c.db != nil {
 		log.Fatal("DB is not nil; only run initializeCache() once!")
 	}
 
@@ -53,12 +51,12 @@ func (c *Cache) InitializeCache(dbFileName string) error {
 	//log.Println(elapsed)
 	//log.Fatal(elapsed > time.Hour)
 
-	db, err = bolt.Open(dbFileName, 0600, nil)
+	c.db, err = bolt.Open(dbFileName, 0600, nil)
 	if err != nil {
 		return err
 	}
 
-	return db.Update(func(tx *bolt.Tx) error {
+	return c.db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(DBBucketName))
 		if err != nil {
 			return fmt.Errorf("create bucket: %s", err)
@@ -69,9 +67,10 @@ func (c *Cache) InitializeCache(dbFileName string) error {
 }
 
 func (c *Cache) GetKey(url string) []byte {
+
 	var v []byte
 
-	if err := db.View(func(tx *bolt.Tx) error {
+	if err := c.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(DBBucketName))
 		v = b.Get([]byte(url))
 		return nil
@@ -80,46 +79,20 @@ func (c *Cache) GetKey(url string) []byte {
 	}
 
 	if v != nil {
-		log.Println("**************************** Cache hit", url)
 		var buf bytes.Buffer
 		err := gunzipper2(&buf, v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		//return bytes.NewReader(buf2), true
+		log.Println("              *")
 		return buf.Bytes()
 	}
 
 	return nil
 }
 
-func (c *Cache) GetKey2(url string) (io.Reader, bool) {
-	var v []byte
-
-	if err := db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(DBBucketName))
-		v = b.Get([]byte(url))
-		return nil
-	}); err != nil {
-		log.Fatal(err)
-	}
-
-	if v != nil {
-		log.Println("**************************** Cache hit", url)
-		var buf bytes.Buffer
-		err := gunzipper2(&buf, v)
-		if err != nil {
-			log.Fatal(err)
-		}
-		//return bytes.NewReader(buf2), true
-		return &buf, true
-	}
-	return nil, false
-}
-
 func (c *Cache) AddToCache(url string, body []byte) error {
-	log.Println("    Cache add:", url)
-	return db.Update(func(tx *bolt.Tx) error {
+	return c.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(DBBucketName))
 
 		var gzbuf bytes.Buffer
