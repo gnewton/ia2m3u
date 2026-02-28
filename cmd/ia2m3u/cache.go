@@ -20,36 +20,39 @@ type Cache struct {
 	filename     string
 	DBBucketName string
 	ttlSeconds   int64
+	keepForever  bool
 }
 
 func (c *Cache) InitializeCache(dbFileName string) error {
+	log.Println("InitializeCache", dbFileName)
 	if c.db != nil {
 		log.Fatal("DB is not nil; only run initializeCache() once!")
 	}
 
 	var err error
+	log.Println(c.keepForever)
 
-	fileInfo, err := os.Stat(dbFileName)
-	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			log.Fatal(err)
-		}
-	}
-	// Gives the modification time
-	if fileInfo != nil {
-		modificationTime := fileInfo.ModTime()
-		if time.Since(modificationTime) > time.Hour {
-			err = os.Remove(dbFileName)
-			if err != nil {
-				log.Println("Unable to delete file:", dbFileName)
-				return err
+	if !c.keepForever {
+		log.Println("Delewting cache db", dbFileName)
+		fileInfo, err := os.Stat(dbFileName)
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				log.Fatal(err)
 			}
 		}
+		// Gives the modification time
+		if fileInfo != nil {
+			modificationTime := fileInfo.ModTime()
+			if time.Since(modificationTime) > time.Hour {
+				err = os.Remove(dbFileName)
+				if err != nil {
+					log.Println("Unable to delete file:", dbFileName)
+					return err
+				}
+			}
 
+		}
 	}
-
-	//log.Println(elapsed)
-	//log.Fatal(elapsed > time.Hour)
 
 	c.db, err = bolt.Open(dbFileName, 0600, nil)
 	if err != nil {
@@ -84,14 +87,16 @@ func (c *Cache) GetKey(url string) []byte {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("              *")
 		return buf.Bytes()
+	} else {
+		log.Println("Cache miss")
 	}
 
 	return nil
 }
 
 func (c *Cache) AddToCache(url string, body []byte) error {
+
 	return c.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(DBBucketName))
 

@@ -117,7 +117,7 @@ func ScrapeSearch(query string, maxNumResults int, chunkSize int, c chan []searc
 
 			log.Println("search", url)
 
-			err := getUrlJSON(client, url, true, &tmpItems, cursor, cache)
+			err := getUrlJSON(client, url, true, "", &tmpItems, cursor, cache)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -137,4 +137,43 @@ func ScrapeSearch(query string, maxNumResults int, chunkSize int, c chan []searc
 		close(c)
 	}()
 	return nil
+}
+
+func ScrapeSearch2(query string, cursor string, maxNumResults int, chunkSize int, client *http.Client, cache *Cache) ([]searchItem, string, error) {
+
+	if chunkSize < 100 {
+		return nil, "", fmt.Errorf("Requested num results must be > 100")
+	}
+
+	if chunkSize > 5000 {
+		return nil, "", fmt.Errorf("ChunkSize number of results requested exceeded")
+	}
+
+	if chunkSize != 0 {
+		query = query + "&count=" + strconv.Itoa(chunkSize)
+	}
+
+	log.Println("-------------------New search---------------------")
+
+	if cursor != "" {
+		query = query + "&cursor=" + cursor
+		log.Println("-----------Cursor:", cursor)
+	}
+
+	var tmpItems scrapeItems
+	url := IA_ScrapeBaseURL + query
+
+	log.Println("search", url)
+
+	err := getUrlJSON(client, url, true, "", &tmpItems, cursor, cache)
+	if err != nil {
+		return nil, "", err
+	}
+
+	err = fixSearchItemFields(tmpItems.Items)
+	if err != nil {
+		return nil, "", err
+	}
+	return tmpItems.Items, tmpItems.Cursor, nil
+
 }

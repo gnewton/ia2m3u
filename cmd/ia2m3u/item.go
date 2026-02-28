@@ -6,7 +6,8 @@ import (
 	"sync"
 )
 
-var ItemBaseUrl = "https://archive.org/metadata/"
+// var ItemBaseUrl = "https://archive.org/metadata/"
+var ItemBaseUrl = "http://archive.org/metadata/"
 
 type ItemTopLevelMetadata struct {
 	Created         int64        `json:"created"`
@@ -63,7 +64,7 @@ func getItem(id string, client *http.Client, cache *Cache) *ItemTopLevelMetadata
 	url := ItemBaseUrl + id
 	var item ItemTopLevelMetadata
 
-	err := getUrlJSON(client, url, true, &item, "", cache)
+	err := getUrlJSON(client, url, true, id, &item, "", cache)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -108,12 +109,12 @@ func itemGetter(i int, wg *sync.WaitGroup, ids chan string, items chan *ItemTopL
 	for id := range ids {
 		//tmp := new(ItemTopLevelMetadata)
 		//tmp.Metadata.Identifier = id
-		log.Println(i, id)
+		//log.Println(i, id)
 		tmd := getItem(id, client, cache)
 
 		items <- tmd
 	}
-	log.Println("itemGetter END", i)
+	//log.Println("itemGetter END", i)
 }
 
 func fixItemStrings(tm *ItemTopLevelMetadata) error {

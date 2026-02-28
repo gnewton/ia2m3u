@@ -23,7 +23,9 @@ func main() {
 		log.Fatal(err)
 	}
 	itemCache := new(Cache)
+	itemCache.keepForever = true
 	err = itemCache.InitializeCache("cache_item.db")
+
 	client := newClient()
 
 	//getIdList(client, itemCache)
@@ -47,6 +49,29 @@ func main() {
 	//err = ScrapeSearch(query, 20000000, 5000, c, client, scrapeCache)
 	//maxNumResults := 9999999
 	maxNumResults := 9999999999
+
+	var results []searchItem
+	cursor := ""
+	count := 0
+	for {
+		results, cursor, err = ScrapeSearch2(query, cursor, maxNumResults, 5000, client, scrapeCache)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for i := 0; i < len(results); i++ {
+			log.Println(count, results[i].Identifier)
+			_ = getItem(results[i].Identifier, client, itemCache)
+			count++
+
+		}
+		if cursor == "" {
+			break
+		}
+	}
+
+	log.Fatal()
+
 	err = ScrapeSearch(query, maxNumResults, 5000, c, client, scrapeCache)
 	log.Println("ScrapeSearch done")
 
@@ -59,39 +84,25 @@ func main() {
 	if true {
 		log.Println("Starting")
 
-		cItem := make(chan *ItemTopLevelMetadata, 7)
+		cItem := make(chan *ItemTopLevelMetadata, 3)
 
-		if true {
-			go func() {
-				log.Println("################################")
-				jj := 0
-				for item := range cItem {
-					log.Println(jj, "##### ", item.Metadata.Identifier)
-					jj++
-				}
-			}()
-
+		go func() {
 			log.Println("Starting Results send loop")
 			count2 := 0
 			getItems(c, client, cItem, itemCache, &count2)
 
-			//close(cItem)
-		}
-		if false {
-			log.Println("################################")
-			jj := 0
-			for item := range cItem {
-				log.Println(jj, "##### ", item.Metadata.Identifier)
-				jj++
-			}
+		}()
 
-			go func() {
-				log.Println("Starting Results send loop")
-				count2 := 0
-				getItems(c, client, cItem, itemCache, &count2)
+		log.Println("################################")
 
-			}()
+		jj := 0
+		for item := range cItem {
+			//if jj%100 == 0 {
+			log.Println(jj, "##### ", item.Metadata.Identifier)
+			//}
+			jj++
 		}
+
 		log.Fatal()
 	}
 
