@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// Internet Archive Search api (scrape): https://archive.org/help/aboutsearch.htm
 var IA_ScrapeBaseURL = "https://archive.org/services/search/v1/scrape?"
 
 const MAX_RESULTS = 5000
@@ -138,6 +139,78 @@ func ScrapeSearch(query string, maxNumResults int, chunkSize int, c chan []searc
 	}()
 	return nil
 }
+
+
+type Scrape struct{
+	query string
+	cursor string
+	resultsCount int64
+	maxResults int64
+	chunkSize int
+	client *http.Client
+	cache *Cache
+	done bool
+}
+
+
+func (s *Scrape) Execute()([]searchItem, error){
+	
+	if s.maxResults < 100 {
+		return nil,fmt.Errorf("Requested num results must be > 100")
+	}
+
+	if s.chunkSize > 5000 {
+		return nil, fmt.Errorf("ChunkSize number of results requested exceeded")
+	}
+
+	if s.done{
+		return nil, nil
+	}
+
+	thisQuery := s.query
+
+	if s.chunkSize != 0 {
+		thisQuery = thisQuery + "&count=" + strconv.Itoa(s.chunkSize)
+	}
+
+	if s.cursor != "" {
+		thisQuery = thisQuery + "&cursor=" + s.cursor
+	}
+
+	var tmpItems scrapeItems
+	url := IA_ScrapeBaseURL + thisQuery
+
+	log.Println("search", url)
+
+	err := getUrlJSON(s.client, url, true, "", &tmpItems, s.cursor, s.cache)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(tmpItems.Items) == 0{
+		return nil, nil
+	}
+
+	s.resultsCount = s.resultsCount  + int64(len(tmpItems.Items))
+	
+	if s.resultsCount >= s.maxResults{
+		s.done = true
+	}
+
+	err = fixSearchItemFields(tmpItems.Items)
+	if err != nil {
+		return nil, err
+	}
+	s.cursor = tmpItems.Cursor
+
+	if s.cursor == ""{
+		s.done = true
+	}
+
+	return tmpItems.Items, nil
+
+}
+
 
 func ScrapeSearch2(query string, cursor string, maxNumResults int, chunkSize int, client *http.Client, cache *Cache) ([]searchItem, string, error) {
 

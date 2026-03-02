@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 )
 
 // Internet Archive Search api (scrape): https://archive.org/help/aboutsearch.htm
@@ -46,6 +47,33 @@ func main() {
 	c := make(chan []searchItem, 1)
 
 	log.Println("ScrapeSearch")
+
+
+
+	if true{
+		scrape := Scrape{
+			query:query,
+			client:client,
+			cache:scrapeCache,
+			chunkSize: 4000,
+			maxResults: 999999999,
+		}
+
+		for{
+			results, err := scrape.Execute()
+			if err != nil{
+				log.Fatal(err)
+			}
+			if results == nil{
+				break
+			}
+			log.Println(len(results))
+		}
+
+		log.Fatal()
+	}
+
+	
 	//err = ScrapeSearch(query, 20000000, 5000, c, client, scrapeCache)
 	//maxNumResults := 9999999
 	maxNumResults := 9999999999
@@ -61,8 +89,12 @@ func main() {
 
 		for i := 0; i < len(results); i++ {
 			log.Println(count, results[i].Identifier)
-			_ = getItem(results[i].Identifier, client, itemCache)
-			count++
+			_, err = getItem(results[i].Identifier, client, itemCache)
+			if err != nil{
+				time.Sleep(10*time.Second)
+			}else{
+				count++
+			}
 
 		}
 		if cursor == "" {
@@ -121,7 +153,10 @@ func main() {
 				log.Println(total, " TITLE --- ", result.Title, "  IDENTIFIER --- ", result.Identifier)
 			}
 
-			item := getItem(result.Identifier, client, itemCache)
+			item,err := getItem(result.Identifier, client, itemCache)
+			if err != nil{
+				log.Fatal(err)
+}
 
 			if item == nil {
 				log.Fatal("item == nil")
@@ -207,7 +242,10 @@ func getIdList(client *http.Client, cache *Cache) {
 		//log.Println(item.Format)
 		//log.Println()
 
-		item := getItem(identifier, client, cache)
+		item,err := getItem(identifier, client, cache)
+		if err != nil{
+			log.Fatal(err)
+		}
 		log.Println(i, " ###### TITLE --- ", item.Metadata.Title)
 		//log.Printf("%+v\n", item)
 	}

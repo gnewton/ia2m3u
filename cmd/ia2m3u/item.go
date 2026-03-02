@@ -60,18 +60,18 @@ type Role struct {
 	Performer     []string
 }
 
-func getItem(id string, client *http.Client, cache *Cache) *ItemTopLevelMetadata {
+func getItem(id string, client *http.Client, cache *Cache) (*ItemTopLevelMetadata, error) {
 	url := ItemBaseUrl + id
 	var item ItemTopLevelMetadata
 
 	err := getUrlJSON(client, url, true, id, &item, "", cache)
 	if err != nil {
-		log.Fatal(err)
+	return 	  nil, err
 	}
 
 	fixItemStrings(&item)
 
-	return &item
+	return &item, nil
 }
 
 func getItems(searchItems chan []searchItem, client *http.Client, c chan *ItemTopLevelMetadata, cache *Cache, count *int) {
@@ -110,7 +110,10 @@ func itemGetter(i int, wg *sync.WaitGroup, ids chan string, items chan *ItemTopL
 		//tmp := new(ItemTopLevelMetadata)
 		//tmp.Metadata.Identifier = id
 		//log.Println(i, id)
-		tmd := getItem(id, client, cache)
+		tmd, err := getItem(id, client, cache)
+		if err != nil{
+                   log.Println(err)
+}
 
 		items <- tmd
 	}
