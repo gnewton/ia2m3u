@@ -1,9 +1,11 @@
 package main
 
 import (
+	"os"
 	"log"
 	"net/http"
 	"time"
+	"compress/gzip"
 )
 
 // Internet Archive Search api (scrape): https://archive.org/help/aboutsearch.htm
@@ -44,8 +46,7 @@ func main() {
 
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
 
-	c := make(chan []searchItem, 1)
-
+	
 	log.Println("ScrapeSearch")
 
 
@@ -55,10 +56,27 @@ func main() {
 			query:query,
 			client:client,
 			cache:scrapeCache,
-			chunkSize: 4000,
+			chunkSize: 5000,
 			maxResults: 999999999,
+			pause: 1*time.Second,
 		}
 
+		total, err:= scrape.Total()
+		if err != nil{
+			log.Fatal(err)
+		}
+		log.Println("Total",total)
+
+		file, err := os.OpenFile("ids.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		gzipWriter := gzip.NewWriter(file)
+		defer gzipWriter.Close() 
+
+		//counter := 0
+		//itemCounter := 0
 		for{
 			results, err := scrape.Execute()
 			if err != nil{
@@ -67,108 +85,29 @@ func main() {
 			if results == nil{
 				break
 			}
-			log.Println(len(results))
+			// log.Println(len(results), counter)
+			// counter = counter + len(results)
+			 for i:=0; i<len(results); i++{
+			// 	log.Println(itemCounter, results[i].Identifier)
+				 if _, err := file.WriteString(results[i].Identifier+ "\n"); err != nil {
+					 log.Fatal(err)
+				 }
+			 }
+			// 	_, err = getItem(results[i].Identifier, client, itemCache)
+			// 	if err != nil{
+			// 		time.Sleep(10*time.Second)
+			// 	}else{
+					
+			// 	}
+			// 	itemCounter = itemCounter +1
+			// }
 		}
 
 		log.Fatal()
 	}
 
 	
-	//err = ScrapeSearch(query, 20000000, 5000, c, client, scrapeCache)
-	//maxNumResults := 9999999
-	maxNumResults := 9999999999
 
-	var results []searchItem
-	cursor := ""
-	count := 0
-	for {
-		results, cursor, err = ScrapeSearch2(query, cursor, maxNumResults, 5000, client, scrapeCache)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for i := 0; i < len(results); i++ {
-			log.Println(count, results[i].Identifier)
-			_, err = getItem(results[i].Identifier, client, itemCache)
-			if err != nil{
-				time.Sleep(10*time.Second)
-			}else{
-				count++
-			}
-
-		}
-		if cursor == "" {
-			break
-		}
-	}
-
-	log.Fatal()
-
-	err = ScrapeSearch(query, maxNumResults, 5000, c, client, scrapeCache)
-	log.Println("ScrapeSearch done")
-
-	total := 0
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if true {
-		log.Println("Starting")
-
-		cItem := make(chan *ItemTopLevelMetadata, 3)
-
-		go func() {
-			log.Println("Starting Results send loop")
-			count2 := 0
-			getItems(c, client, cItem, itemCache, &count2)
-
-		}()
-
-		log.Println("################################")
-
-		jj := 0
-		for item := range cItem {
-			//if jj%100 == 0 {
-			log.Println(jj, "##### ", item.Metadata.Identifier)
-			//}
-			jj++
-		}
-
-		log.Fatal()
-	}
-
-	for results := range c {
-		log.Println()
-		log.Println()
-		log.Println("CHUNK +++++++++++++++++++++++++++++++++++++++++++++++++++++", len(results))
-		log.Println()
-		count := 0
-		for i, _ := range results {
-			result := results[i]
-			//if true || count < 20 {
-			//log.Println(item.Format)
-
-			if total%100 == 0 {
-				log.Println(total, " TITLE --- ", result.Title, "  IDENTIFIER --- ", result.Identifier)
-			}
-
-			item,err := getItem(result.Identifier, client, itemCache)
-			if err != nil{
-				log.Fatal(err)
-}
-
-			if item == nil {
-				log.Fatal("item == nil")
-			}
-
-			//}
-			count++
-			total++
-		}
-	}
-
-	log.Println("")
 	log.Println("")
 	log.Println("")
 

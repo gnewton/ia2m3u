@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"sync"
 )
 
 // var ItemBaseUrl = "https://archive.org/metadata/"
@@ -64,9 +63,9 @@ func getItem(id string, client *http.Client, cache *Cache) (*ItemTopLevelMetadat
 	url := ItemBaseUrl + id
 	var item ItemTopLevelMetadata
 
-	err := getUrlJSON(client, url, true, id, &item, "", cache)
+	err := getUrlJSON(client, url, true, id, &item, "", cache, 0)
 	if err != nil {
-	return 	  nil, err
+		return nil, err
 	}
 
 	fixItemStrings(&item)
@@ -74,51 +73,7 @@ func getItem(id string, client *http.Client, cache *Cache) (*ItemTopLevelMetadat
 	return &item, nil
 }
 
-func getItems(searchItems chan []searchItem, client *http.Client, c chan *ItemTopLevelMetadata, cache *Cache, count *int) {
 
-	log.Println("Starting getItems")
-	var wg sync.WaitGroup
-
-	idchan := make(chan string, len(c))
-
-	for i := 0; i < cap(c); i++ {
-		log.Println("go itemGetter(idchan, c)")
-		wg.Add(1)
-		go itemGetter(i, &wg, idchan, c, client, cache)
-	}
-
-	log.Println("Starting getItems: loop")
-	for searchResults := range searchItems {
-		for i, _ := range searchResults {
-			id := searchResults[i].Identifier
-			idchan <- id
-			*count++
-		}
-	}
-
-	log.Println("CLOSING idchan CHANNEL")
-	close(idchan)
-
-	wg.Wait()
-	close(c)
-}
-
-func itemGetter(i int, wg *sync.WaitGroup, ids chan string, items chan *ItemTopLevelMetadata, client *http.Client, cache *Cache) {
-	defer wg.Done()
-	log.Println("itemGetter START", i)
-	for id := range ids {
-		//tmp := new(ItemTopLevelMetadata)
-		//tmp.Metadata.Identifier = id
-		//log.Println(i, id)
-		tmd, err := getItem(id, client, cache)
-		if err != nil{
-                   log.Println(err)
-}
-
-		items <- tmd
-	}
-	//log.Println("itemGetter END", i)
-}
 
 func fixItemStrings(tm *ItemTopLevelMetadata) error {
 

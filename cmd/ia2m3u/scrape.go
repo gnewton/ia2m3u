@@ -1,6 +1,7 @@
 package main
 
 import (
+	"time"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ type scrapeItems struct {
 	Cursor         string `json:"cursor"`
 	CursorPrevious string `json:"previous"`
 	Items          []searchItem
-	Total          int `json:"total"`
+	Total          int64 `json:"total"`
 }
 
 type searchItem struct {
@@ -118,7 +119,7 @@ func ScrapeSearch(query string, maxNumResults int, chunkSize int, c chan []searc
 
 			log.Println("search", url)
 
-			err := getUrlJSON(client, url, true, "", &tmpItems, cursor, cache)
+			err := getUrlJSON(client, url, true, "", &tmpItems, cursor, cache, 0)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -150,8 +151,20 @@ type Scrape struct{
 	client *http.Client
 	cache *Cache
 	done bool
+	pause time.Duration
 }
 
+func (s *Scrape) Total()(int64, error){
+	url := IA_ScrapeBaseURL + s.query + "&total_only=true"
+
+	var results scrapeItems
+	err := getUrlJSON(s.client, url, true, "", &results, s.cursor, s.cache, 0)
+	if err != nil {
+		return 0, err
+	}
+
+	return results.Total, err
+}
 
 func (s *Scrape) Execute()([]searchItem, error){
 	
@@ -182,7 +195,7 @@ func (s *Scrape) Execute()([]searchItem, error){
 
 	log.Println("search", url)
 
-	err := getUrlJSON(s.client, url, true, "", &tmpItems, s.cursor, s.cache)
+	err := getUrlJSON(s.client, url, true, "", &tmpItems, s.cursor, s.cache, s.pause)
 	if err != nil {
 		return nil, err
 	}
@@ -212,41 +225,3 @@ func (s *Scrape) Execute()([]searchItem, error){
 }
 
 
-func ScrapeSearch2(query string, cursor string, maxNumResults int, chunkSize int, client *http.Client, cache *Cache) ([]searchItem, string, error) {
-
-	if chunkSize < 100 {
-		return nil, "", fmt.Errorf("Requested num results must be > 100")
-	}
-
-	if chunkSize > 5000 {
-		return nil, "", fmt.Errorf("ChunkSize number of results requested exceeded")
-	}
-
-	if chunkSize != 0 {
-		query = query + "&count=" + strconv.Itoa(chunkSize)
-	}
-
-	log.Println("-------------------New search---------------------")
-
-	if cursor != "" {
-		query = query + "&cursor=" + cursor
-		log.Println("-----------Cursor:", cursor)
-	}
-
-	var tmpItems scrapeItems
-	url := IA_ScrapeBaseURL + query
-
-	log.Println("search", url)
-
-	err := getUrlJSON(client, url, true, "", &tmpItems, cursor, cache)
-	if err != nil {
-		return nil, "", err
-	}
-
-	err = fixSearchItemFields(tmpItems.Items)
-	if err != nil {
-		return nil, "", err
-	}
-	return tmpItems.Items, tmpItems.Cursor, nil
-
-}

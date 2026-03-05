@@ -20,7 +20,7 @@ var total time.Duration = 0
 var backOff time.Duration = 3 * time.Second
 
 // func getUrlJSON(client *http.Client, url string, cachePrefix *string, useCache bool, items *scrapeItems, cursor string, cache *Cache) error {
-func getUrlJSON(client *http.Client, url string, useCache bool, alternateKey string, items interface{}, cursor string, cache *Cache) error {
+func getUrlJSON(client *http.Client, url string, useCache bool, alternateKey string, items interface{}, cursor string, cache *Cache, pause time.Duration) error {
 
 	log.Println("Getting ", url)
 	var body []byte
@@ -68,15 +68,17 @@ func getUrlJSON(client *http.Client, url string, useCache bool, alternateKey str
 
 				log.Println(since, min, max, time.Duration(int64(total)/n))
 
-				if since > time.Duration(int64(float64(int64(total))/float64(n)*3.0)) || since > 2*time.Second {
+				if since > time.Duration(int64(float64(int64(total))/float64(n)*3.0)) || since > 5*time.Second {
 					// Backoff
-					backOff = backOff + time.Second + time.Second + time.Second + time.Second
+					if backOff < 30*time.Second{
+						backOff = backOff + time.Second + time.Second + time.Second + time.Second
+					}
 					log.Println(backOff, "getUrlJSON - BACKOFF $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 					log.Println(backOff + time.Second + time.Second + time.Second)
 					time.Sleep(backOff + time.Second + time.Second + time.Second) 
 				} else {
 					if backOff > 0 {
-						backOff = backOff - time.Second
+						backOff = backOff - time.Second- time.Second
 					}
 				}
 
@@ -101,7 +103,7 @@ func getUrlJSON(client *http.Client, url string, useCache bool, alternateKey str
 					log.Println(err)
 					log.Fatal(err)
 				}
-				time.Sleep(300 * time.Millisecond)
+				time.Sleep(pause)
 			}
 			body, err = io.ReadAll(res.Body)
 			if err != nil {
