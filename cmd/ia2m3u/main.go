@@ -1,11 +1,13 @@
 package main
 
 import (
-	"os"
+	//"compress/gzip"
+	"context"
+	ia "github.com/gnewton/iascrape"
 	"log"
-	"net/http"
+	//"net/http"
+	"os"
 	"time"
-	"compress/gzip"
 )
 
 // Internet Archive Search api (scrape): https://archive.org/help/aboutsearch.htm
@@ -19,19 +21,14 @@ func main() {
 
 	log.Println("START")
 
-	scrapeCache := new(Cache)
-
-	err := scrapeCache.InitializeCache("cache_scrape.db")
+	itemCache := new(ia.Cache)
+	itemCache.KeepForever = true
+	err := itemCache.InitializeCache("cache_item.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	itemCache := new(Cache)
-	itemCache.keepForever = true
-	err = itemCache.InitializeCache("cache_item.db")
 
-	client := newClient()
-
-	//getIdList(client, itemCache)
+	client := ia.NewClient()
 
 	//query := "fields=year,title,collection&q=collection=78%20AND%20mediatype%3Aaudio"
 	//query := "fields=title,format,btih&q=collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio"
@@ -42,71 +39,78 @@ func main() {
 	//query := "fields=title,btih&q=mediatype%3Aaudio&sorts=addeddate%20desc"
 	//query := "fields=title,btih&q=mediatype%3Atexts&sorts=addeddate&sorts=btih%20desc"
 	//query := "fields=title,btih&q=title%3Ab%20AND%20mediatype%3Atexts&sorts=btih&sorts=btih%20desc"
-	query := "fields=title&q=mediatype%3Aaudio"
+	//query := "fields=title&q=mediatype%3Aaudio"
+	query := "q=mediatype%3Aaudio"
 
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
 
-	
 	log.Println("ScrapeSearch")
 
-
-
-	if true{
-		scrape := Scrape{
-			query:query,
-			client:client,
-			cache:scrapeCache,
-			chunkSize: 5000,
-			maxResults: 999999999,
-			pause: 1*time.Second,
+	if true {
+		scrape := ia.Search{
+			Query:      query,
+			Client:     client,
+			ChunkSize:  5000,
+			MaxResults: 999999999,
 		}
 
-		total, err:= scrape.Total()
-		if err != nil{
+		//ctx, cancel := context.WithTimeout(context.Background(), 20000*time.Millisecond)
+		//ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(1*time.Millisecond))
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+		defer cancel()
+
+		total, ellapsed, err := scrape.Total(ctx)
+		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("Total",total)
+		log.Println(err)
+		log.Println("Ellapsed", ellapsed)
+		log.Println("total", total)
 
 		file, err := os.OpenFile("ids.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer file.Close()
-		gzipWriter := gzip.NewWriter(file)
-		defer gzipWriter.Close() 
+		//gzipWriter := gzip.NewWriter(file)
+		//defer gzipWriter.Close()
 
 		//counter := 0
 		//itemCounter := 0
-		for{
-			results, err := scrape.Execute()
-			if err != nil{
+		for {
+			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+			defer cancel()
+
+			results, ellapsed, err := scrape.Execute(ctx)
+			if err != nil {
 				log.Fatal(err)
 			}
-			if results == nil{
+			log.Println("Ellapsed", ellapsed)
+			if results == nil {
 				break
 			}
 			// log.Println(len(results), counter)
 			// counter = counter + len(results)
-			 for i:=0; i<len(results); i++{
-			// 	log.Println(itemCounter, results[i].Identifier)
-				 if _, err := file.WriteString(results[i].Identifier+ "\n"); err != nil {
-					 log.Fatal(err)
-				 }
-			 }
-			// 	_, err = getItem(results[i].Identifier, client, itemCache)
-			// 	if err != nil{
-			// 		time.Sleep(10*time.Second)
-			// 	}else{
-					
-			// 	}
-			// 	itemCounter = itemCounter +1
-			// }
-		}
+			for i := 0; i < len(results); i++ {
+				// 	log.Println(itemCounter, results[i].Identifier)
+				if _, err := file.WriteString(results[i].Identifier + "\n"); err != nil {
+					log.Fatal(err)
+				}
 
-		log.Fatal()
+				ctxItem, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				//_, _, err = ia.GetItem(ctxItem, results[i].Identifier, client, itemCache)
+				_, _, err = ia.GetItem(ctxItem, results[i].Identifier, client, nil)
+				if err != nil {
+					log.Fatal(err)
+				} else {
+					cancel()
+				}
+				//itemCounter = itemCounter + 1
+			}
+		}
 	}
 
-	
+	log.Fatal()
 
 	log.Println("")
 	log.Println("")
@@ -172,22 +176,6 @@ var rejectFieldString_ = map[string][]string{
 		"Full Choir",
 		"1st Battalion, The Black Watch (Royal Highland Regiment)",
 	},
-}
-
-func getIdList(client *http.Client, cache *Cache) {
-	for i, _ := range idList {
-		identifier := idList[i]
-		//if true || count < 20 {
-		//log.Println(item.Format)
-		//log.Println()
-
-		item,err := getItem(identifier, client, cache)
-		if err != nil{
-			log.Fatal(err)
-		}
-		log.Println(i, " ###### TITLE --- ", item.Metadata.Title)
-		//log.Printf("%+v\n", item)
-	}
 }
 
 var idList = []string{
