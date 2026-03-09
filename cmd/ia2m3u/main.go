@@ -48,19 +48,18 @@ func main() {
 	log.Println("ScrapeSearch")
 
 	if true {
-		scrape := ia.Search{
+		search := ia.Search{
 			Query:      query,
 			Client:     client,
 			ChunkSize:  5000,
 			MaxResults: math.MaxInt64,
+			Retries:    5,
 		}
 
-		//ctx, cancel := context.WithTimeout(context.Background(), 20000*time.Millisecond)
-		//ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(1*time.Millisecond))
-		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+		searchCtx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
 		defer cancel()
 
-		total, err := scrape.Total(ctx)
+		total, err := search.Total(searchCtx)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -78,7 +77,7 @@ func main() {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 
-			results, err := scrape.Execute(ctx)
+			results, err := search.Execute(ctx)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -95,7 +94,7 @@ func main() {
 
 				ctxItem, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				//_, _, err = ia.GetItem(ctxItem, results[i].Identifier, client, itemCache)
-				_, err = ia.GetItem(ctxItem, results[i].Identifier, client, itemCache)
+				_, err = ia.GetItem(ctxItem, results[i].Identifier, client, nil)
 				if err != nil {
 					log.Fatal(err)
 				} else {
