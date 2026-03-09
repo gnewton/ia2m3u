@@ -5,6 +5,7 @@ import (
 	"context"
 	ia "github.com/gnewton/iascrape"
 	"log"
+	"math"
 	//"net/http"
 	"os"
 	"time"
@@ -51,7 +52,7 @@ func main() {
 			Query:      query,
 			Client:     client,
 			ChunkSize:  5000,
-			MaxResults: 999999999,
+			MaxResults: math.MaxInt64,
 		}
 
 		//ctx, cancel := context.WithTimeout(context.Background(), 20000*time.Millisecond)
@@ -59,12 +60,11 @@ func main() {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
 		defer cancel()
 
-		total, ellapsed, err := scrape.Total(ctx)
+		total, err := scrape.Total(ctx)
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Println(err)
-		log.Println("Ellapsed", ellapsed)
 		log.Println("total", total)
 
 		file, err := os.OpenFile("ids.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -72,20 +72,16 @@ func main() {
 			log.Fatal(err)
 		}
 		defer file.Close()
-		//gzipWriter := gzip.NewWriter(file)
-		//defer gzipWriter.Close()
 
-		//counter := 0
-		//itemCounter := 0
 		for {
-			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+			//ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 
-			results, ellapsed, err := scrape.Execute(ctx)
+			results, err := scrape.Execute(ctx)
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Println("Ellapsed", ellapsed)
 			if results == nil {
 				break
 			}
@@ -99,7 +95,7 @@ func main() {
 
 				ctxItem, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				//_, _, err = ia.GetItem(ctxItem, results[i].Identifier, client, itemCache)
-				_, _, err = ia.GetItem(ctxItem, results[i].Identifier, client, nil)
+				_, err = ia.GetItem(ctxItem, results[i].Identifier, client, itemCache)
 				if err != nil {
 					log.Fatal(err)
 				} else {
