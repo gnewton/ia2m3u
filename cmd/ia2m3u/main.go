@@ -7,7 +7,7 @@ import (
 	"log"
 	"math"
 	//"net/http"
-	"os"
+	//"os"
 	"time"
 )
 
@@ -66,12 +66,13 @@ func main() {
 		log.Println(err)
 		log.Println("total", total)
 
-		file, err := os.OpenFile("ids.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer file.Close()
-
+		// file, err := os.OpenFile("ids.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// defer file.Close()
+		count := 0
+		
 		for {
 			//ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -84,12 +85,14 @@ func main() {
 			if results == nil {
 				break
 			}
-			// log.Println(len(results), counter)
+			 log.Println(count)
 			// counter = counter + len(results)
 			for i := 0; i < len(results); i++ {
-				// 	log.Println(itemCounter, results[i].Identifier)
-				if _, err := file.WriteString(results[i].Identifier + "\n"); err != nil {
-					log.Fatal(err)
+				//if _, err := file.WriteString(results[i].Identifier + "\n"); err != nil {
+				//log.Fatal(err)
+				//}
+				if count %100 == 0{
+					log.Println(count, "Getting", results[i].Identifier)
 				}
 
 				ctxItem, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -100,7 +103,7 @@ func main() {
 				} else {
 					cancel()
 				}
-				//itemCounter = itemCounter + 1
+				count = count +1
 			}
 		}
 	}
