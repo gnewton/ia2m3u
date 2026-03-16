@@ -15,7 +15,19 @@ import (
 
 // IA MediaTypes:
 // texts, audio, movies, web, image, account, data, collection, software, etree, other
-//
+// Default is to create an m3u file in ., referencing URLs for audio
+//  -c =  cache load; populates local ID cache; does not generate any m3u file
+// -d = directory for m3u file; if missing, dir is "."
+// -L = Sound files are local; Downloaded to -d directory
+// -q = query
+// -i = ID reject list; ascii list, one id per line
+// -r = Field reject list; json; form:
+//  [
+//   "fieldName1": [
+//                  "value1"
+//                  "value2"
+//                 ],
+// ]
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -72,7 +84,7 @@ func main() {
 		// }
 		// defer file.Close()
 		count := 0
-		
+
 		for {
 			//ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -85,13 +97,13 @@ func main() {
 			if results == nil {
 				break
 			}
-			 log.Println(count)
+			log.Println(count)
 			// counter = counter + len(results)
 			for i := 0; i < len(results); i++ {
 				//if _, err := file.WriteString(results[i].Identifier + "\n"); err != nil {
 				//log.Fatal(err)
 				//}
-				if count %100 == 0{
+				if count%100 == 0 {
 					log.Println(count, "Getting", results[i].Identifier)
 				}
 
@@ -103,54 +115,13 @@ func main() {
 				} else {
 					cancel()
 				}
-				count = count +1
+				count = count + 1
 			}
 		}
 	}
 
 	log.Fatal()
 
-	log.Println("")
-	log.Println("")
-
-	log.Fatal()
-	//results, err := search("fields=year,title,collection&q=collection=etree", nil)
-	//results, err := search("fields=year,title,collection&q=collection=etree", 200, nil)
-	//results, totalResults, err := search(query, 20000, 5000, nil, cache)
-	//results, totalResults, err := search("fields=year,title,collection,identifier&q=mediatype%3Aaudio", 3000, 5000, nil)
-	// results, totalResults, err := search("fields=*&q=mediatype%3Aaudio", 12000, 5000, nil, cache)
-
-	//results, totalResults, err := search("fields=*&q=collection=78", 1321, 1000, nil)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.Println("Num results returned", len(results))
-	// log.Println("Total results", totalResults)
-
-	// //log.Println(results[0])
-
-	// count := 0
-	// for i, _ := range results {
-	// 	item := results[i]
-	// 	if count > 20 {
-	// 		break
-	// 	}
-
-	// 	//log.Println(item.Format)
-	// 	log.Println("TITLE --- ", item.Title)
-	// 	log.Println("FORMAT --- ", item.Format)
-	// 	if len(item.Format) > 0 {
-	// 		log.Println(item.Date, item.Format, item.Title, item.CurateNote, item.Curation)
-	// 	}
-
-	// 	// if len(item.Title) != 0 && item.Title[0] != "" {
-	// 	// 	log.Println(i, item.Identifier, item.Year, item.Title)
-
-	// 	// }
-	// 	//log.Println(i, item)
-	// 	//log.Printf("%d   - %#v\n", i, item)
-	// 	count++
-	// }
 }
 
 var rejectFieldString_ = map[string][]string{
