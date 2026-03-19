@@ -1,5 +1,14 @@
+github.com/alexflint/go-arg v1.6.1 h1:uZogJ6VDBjcuosydKgvYYRhh9sRCusjOvoOLZopBlnA=
+github.com/alexflint/go-arg v1.6.1/go.mod h1:nQ0LFYftLJ6njcaee0sU+G0iS2+2XJQfA8I062D0LGc=
+github.com/alexflint/go-scalar v1.2.0 h1:WR7JPKkeNpnYIOfHRa7ivM21aWAdHD0gEWHCx+WQBRw=
+github.com/alexflint/go-scalar v1.2.0/go.mod h1:LoFvNMqS1CPrMVltza4LvnGKhaSpc3oyLEBUZVhhS2o=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gnewton/iascrape v0.0.0-20260307164642-103f169e32d5 h1:0vB0hDejpjbIR857l0U/NJeMAAMLfqlIEwjsr7caWQg=
 github.com/gnewton/iascrape v0.0.0-20260307164642-103f169e32d5/go.mod h1:ht3k5syV9udIVOBJ+rZbFK5v8kOPvwLvNcL80qVNj3M=
+github.com/k3a/go-m3u v0.1.0 h1:4mZVVFp6R1e+t2bKYjWugmxKFcBOsFK4Ixrk2h9AhRY=
+github.com/k3a/go-m3u v0.1.0/go.mod h1:P3zwIgCHFKrxBm0jUkcpWDcWfqduvwfDFvvDSOyH1Ug=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 go.etcd.io/bbolt v1.4.3 h1:dEadXpI6G79deX5prL3QRNP6JB8UxVkqo4UPnHaNXJo=
 go.etcd.io/bbolt v1.4.3/go.mod h1:tKQlpPaYCVFctUIgFKFnAlvbmB3tpy1vkTnDWohtc0E=
 golang.org/x/sys v0.29.0 h1:TPYlXGxvx1MGTn2GiZDhnjPA9wZzZeGKHHmKhHYvgaU=
