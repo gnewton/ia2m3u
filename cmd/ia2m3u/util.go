@@ -1,6 +1,8 @@
 package main
 
 import (
+	//"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	ia "github.com/gnewton/iascrape"
@@ -135,8 +137,55 @@ func downloadAudio(downloadUrls []DownloadAudio) error {
 		if err != nil {
 			return err
 		}
-
 	}
-
 	return nil
 }
+
+type Rejects struct {
+	RejectFields map[string][]string `json:"rejects"`
+}
+
+func loadRejectFieldsFile(rejectFields *map[string][]string) error {
+	//dec := json.NewDecoder(bytes.NewBuffer([]byte(testJson)))
+	return json.Unmarshal([]byte(testJson), rejectFields)
+}
+
+var testJson = `
+{
+       "creator": [
+        "BAND OF H.M. SCOTS GUARDS",
+        "BAND OF THE SCOTS GUARDS",
+        "Band Of H. M. Scots Guards",
+        "Band of H.M. Scots Guards",
+        "COLDSTREAM",
+        "Carole Becker-Douglas",
+        "Coldstream",
+        "H. M. SCOTS GUARDS BAND",
+        "H. Majesty's Scots Guards",
+        "His Majesty's Scots Guards Band",
+        "Leitung",
+        "Mr. R. Everson of the Scots Guards",
+        "Regimental",
+        "RADERMAN",
+        "Gutsul",
+        "Gajdos",
+        "Full Choir",
+        "1st Battalion, The Black Watch (Royal Highland Regiment)"
+      ],
+      "collection": [
+        "HEllo collection"
+      ],
+      "genre": [
+        "HEllo genre"
+      ],
+      "keywords": [
+        "HEllo keywords"
+      ],
+      "language": [
+        "HEllo language"
+      ],
+      "subject": [
+        "HEllo subject"
+      ]
+ }
+`

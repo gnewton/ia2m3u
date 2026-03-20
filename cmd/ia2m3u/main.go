@@ -31,22 +31,21 @@ var SPACE_AND = "%20AND%20"
 var AUDIOQUERY = "mediatype%3A(audio)"
 
 type args struct {
-	M3UFile       string `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
-	CacheLoad     bool   `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
-	Debug         bool   `arg:"-D" help:"Debug mode"`
-	Smallest      bool   `arg:"-s" help:"Select the smallest sized audio file"`
-	Dir           string `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
-	IncludeIDList string `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
-	LocalAudio    bool   `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
-	TxtResults    bool   `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
-	// Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
-	Query           []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"`
-	Formats         string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: MP, VBR MP3, Ogg Vorbis, WAVE, Flac, AIFF"`
-	Random          bool     `arg:"-r" help:"Order of audio items in playlist is random"`
-	RejectFieldList string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected"`
-	RejectIDList    string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
-	VerifyAudioURL  bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
-	Verbose         bool     `arg:"-v" help:"Verbose output"`
+	CacheLoad        bool     `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
+	Debug            bool     `arg:"-D" help:"Debug mode"`
+	Dir              string   `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
+	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: MP3, VBR MP3, Ogg Vorbis, WAVE, Flac, AIFF. "`
+	IncludeIDList    string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
+	LocalAudio       bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
+	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
+	Query            []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
+	Random           bool     `arg:"-r" help:"Order of audio items in playlist is random"`
+	RejectFieldsFile string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
+	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
+	Smallest         bool     `arg:"-s" help:"Select the smallest sized audio file"`
+	TxtResults       bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
+	Verbose          bool     `arg:"-v" help:"Verbose output"`
+	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
 }
 
 func main() {
@@ -74,6 +73,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var rejectFields map[string][]string
+	if args.RejectFieldsFile != "" {
+		err := loadRejectFieldsFile(&rejectFields)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	log.Println(rejectFields, len(rejectFields))
+	log.Fatal("MMMMM")
 
 	client := ia.NewClient()
 
@@ -172,8 +181,9 @@ func main() {
 				}
 
 				if args.VerifyAudioURL {
-					for _, rec := range records {
-						err := verifyAudio(client, rec.URL)
+					log.Println("******************************************", len(downloadUrls))
+					for _, url := range downloadUrls {
+						err := verifyAudio(client, url.remoteUrl)
 						if err != nil {
 							log.Fatal(err)
 						}

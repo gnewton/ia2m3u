@@ -61,17 +61,13 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 				}
 				rec.Title = creator + title + " -- " + rec.Title
 				//rec.URL = AudioFileBaseUrl + item.Metadata.Identifier + "/" + file.Name
-				if local {
-					rec.URL = makeLocalAudioURL(item.Metadata.Identifier, file.Name, file.Format, count) // Local
+				rec.URL = makeLocalAudioURL(item.Metadata.Identifier, file.Name, file.Format, count) // Local
 
-					dla = append(dla, DownloadAudio{
-						localFilename: rec.URL,
-						remoteUrl:     makeRemoteAudioURL(item.Metadata.Identifier, file.Name),
-					})
-				} else {
+				dla = append(dla, DownloadAudio{
+					localFilename: rec.URL,
+					remoteUrl:     makeRemoteAudioURL(item.Metadata.Identifier, file.Name),
+				})
 
-					rec.URL = makeRemoteAudioURL(item.Metadata.Identifier, file.Name) // Remote
-				}
 				if _, ok := recMap[rec.URL]; !ok {
 					recMap[rec.URL] = rec
 					if !random {
@@ -102,7 +98,6 @@ func makeLocalAudioURL(id, filename string, format string, n int) string {
 	case "VBR MP3":
 		suffix = "mp3"
 	}
-
 	return id + "__" + strconv.Itoa(n) + "." + suffix
 }
 
@@ -113,7 +108,6 @@ func addAll(m3 *m3u.M3U, records []*m3u.Record) {
 }
 
 func randomizeAudio(m3 *m3u.M3U, recMap map[string]*m3u.Record) {
-
 	for _, value := range recMap {
 		m3.Add(value)
 	}
