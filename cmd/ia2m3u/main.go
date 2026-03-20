@@ -76,13 +76,14 @@ func main() {
 
 	var rejectFields map[string][]string
 	if args.RejectFieldsFile != "" {
-		err := loadRejectFieldsFile(&rejectFields)
+		err := loadRejectFieldsFile(args.RejectFieldsFile, &rejectFields)
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Println(rejectFields, len(rejectFields))
+		log.Println("MMMMM")
+
 	}
-	log.Println(rejectFields, len(rejectFields))
-	log.Fatal("MMMMM")
 
 	client := ia.NewClient()
 
@@ -107,7 +108,6 @@ func main() {
 
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
 
-	var count int64 = 0
 	var m3 *m3u.M3U
 
 	if m3uOut {
@@ -150,52 +150,10 @@ func main() {
 				break
 			}
 
-			var item *ia.ItemTopLevelMetadata
+			//var item *ia.ItemTopLevelMetadata
 
 			for i := 0; i < len(results); i++ {
-				if args.Verbose {
-					log.Println(i, "Getting: ", results[i].Identifier)
-				}
-				item, err = ia.GetItem(results[i].Identifier, client, itemCache)
-				if err != nil {
-					log.Fatal(err)
-				}
-				count = count + 1
-
-				if args.TxtResults {
-					outputResults(count, &item.Metadata)
-					continue
-				}
-
-				var records []*m3u.Record
-				var downloadUrls []DownloadAudio
-				if m3uOut || args.VerifyAudioURL {
-					downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio)
-				}
-				if m3uOut && !args.Random {
-					addAll(m3, records)
-				}
-
-				if args.LocalAudio {
-					downloadAudio(downloadUrls)
-				}
-
-				if args.VerifyAudioURL {
-					log.Println("******************************************", len(downloadUrls))
-					for _, url := range downloadUrls {
-						err := verifyAudio(client, url.remoteUrl)
-						if err != nil {
-							log.Fatal(err)
-						}
-					}
-				}
-				if args.CacheLoad {
-					// Do nothing
-				}
-
-				if args.Debug {
-					debug(item)
-				}
+				handleItem(results[i], args, client, itemCache, recMap, m3, m3uOut, rejectFields)
 
 			}
 		}

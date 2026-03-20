@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	ia "github.com/gnewton/iascrape"
+	m3u "github.com/k3a/go-m3u"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
 	"strings"
 	"time"
 )
@@ -145,47 +147,79 @@ type Rejects struct {
 	RejectFields map[string][]string `json:"rejects"`
 }
 
-func loadRejectFieldsFile(rejectFields *map[string][]string) error {
-	//dec := json.NewDecoder(bytes.NewBuffer([]byte(testJson)))
-	return json.Unmarshal([]byte(testJson), rejectFields)
+func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]string) error {
+	b, err := os.ReadFile(rejectFilename)
+	if err != nil {
+		log.Fatalf("Failed to read file: %v\n", err)
+	}
+
+	err = json.Unmarshal(b, rejectFields)
+	log.Println(*rejectFields)
+
+	return err
 }
 
-var testJson = `
-{
-       "creator": [
-        "BAND OF H.M. SCOTS GUARDS",
-        "BAND OF THE SCOTS GUARDS",
-        "Band Of H. M. Scots Guards",
-        "Band of H.M. Scots Guards",
-        "COLDSTREAM",
-        "Carole Becker-Douglas",
-        "Coldstream",
-        "H. M. SCOTS GUARDS BAND",
-        "H. Majesty's Scots Guards",
-        "His Majesty's Scots Guards Band",
-        "Leitung",
-        "Mr. R. Everson of the Scots Guards",
-        "Regimental",
-        "RADERMAN",
-        "Gutsul",
-        "Gajdos",
-        "Full Choir",
-        "1st Battalion, The Black Watch (Royal Highland Regiment)"
-      ],
-      "collection": [
-        "HEllo collection"
-      ],
-      "genre": [
-        "HEllo genre"
-      ],
-      "keywords": [
-        "HEllo keywords"
-      ],
-      "language": [
-        "HEllo language"
-      ],
-      "subject": [
-        "HEllo subject"
-      ]
- }
-`
+func handleItem(result ia.SearchItem, args args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string) error {
+	if args.Verbose {
+		log.Println("Getting: ", result.Identifier)
+	}
+	item, err := ia.GetItem(result.Identifier, client, itemCache)
+	if err != nil {
+		return err
+	}
+
+	if rejectByField(&item.Metadata, rejectFields) {
+		return nil
+	}
+
+	if args.TxtResults {
+		outputResults(10, &item.Metadata)
+		return nil
+	}
+
+	var downloadUrls []DownloadAudio
+	if m3uOut || args.VerifyAudioURL {
+		downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio)
+	}
+
+	if args.LocalAudio {
+		downloadAudio(downloadUrls)
+	}
+
+	if args.VerifyAudioURL {
+		log.Println("******************************************", len(downloadUrls))
+		for _, url := range downloadUrls {
+			err := verifyAudio(client, url.remoteUrl)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if args.CacheLoad {
+		// Do nothing
+	}
+
+	if args.Debug {
+		debug(item)
+	}
+
+	return nil
+}
+
+func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string) bool {
+	mm := ia.MakeMetadataItemFieldMap(item)
+
+	for fieldname, field := range mm {
+		log.Println(fieldname, field)
+		if rejectValues, ok := rejectFields[fieldname]; ok {
+			for i := 0; i < len(rejectValues); i++ {
+				if slices.Contains(*field, rejectValues[i]) {
+					log.Println("----------------- REJECTED", *field, " == ", rejectValues[i])
+					return true
+				}
+			}
+		}
+	}
+
+	return false
+}
