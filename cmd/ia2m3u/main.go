@@ -7,8 +7,9 @@ import (
 	m3u "github.com/k3a/go-m3u"
 	"log"
 	"math"
+	//"net/url"
 	"os"
-	"time"
+	//"time"
 )
 
 // texts, audio, movies, web, image, account, data, collection, software, etree, other
@@ -33,16 +34,19 @@ type args struct {
 	M3UFile       string `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
 	CacheLoad     bool   `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
 	Debug         bool   `arg:"-D" help:"Debug mode"`
+	Smallest      bool   `arg:"-s" help:"Select the smallest sized audio file"`
 	Dir           string `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
 	IncludeIDList string `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
 	LocalAudio    bool   `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
 	TxtResults    bool   `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
 	// Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
-	Query           string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"`
-	Random          bool   `arg:"-r" help:"Order of audio items in playlist is random"`
-	RejectFieldList string `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected"`
-	RejectIDList    string `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
-	VerifyAudioURL  bool   `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
+	Query           []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"`
+	Formats         string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: MP, VBR MP3, Ogg Vorbis, WAVE, Flac, AIFF"`
+	Random          bool     `arg:"-r" help:"Order of audio items in playlist is random"`
+	RejectFieldList string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected"`
+	RejectIDList    string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
+	VerifyAudioURL  bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
+	Verbose         bool     `arg:"-v" help:"Verbose output"`
 }
 
 func main() {
@@ -73,20 +77,13 @@ func main() {
 
 	client := ia.NewClient()
 
-	zz := "https://gmail.com"
-	err = ia.HeadUrl(client, zz, 5, 3*time.Second)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	zz = "https://archive.org/download/78_skye-boat-song_pipes-and-drums-of-h-m-2nd-batt-scots-guards-m-lawson-pipe-major-j-b_gbia3042651b/SKYE BOAT SONG - PIPES AND DRUMS OF H. M. 2nd BATT. SCOTS GUARDS.mp3"
-	err = ia.HeadUrl(client, zz, 5, 3*time.Second)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	//query := "fields=year,title,collection&q=collection=78%20AND%20mediatype%3Aaudio"
-	query := "q=collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio&sorts=btih"
+
+	//queries := []string{"collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio&sorts=btih"}
+	queries := []string{"collection=78rpm AND subject=Bagpipe AND mediatype=audio"}
+
+	//queries := []string{"title=(bagpipe) AND mediatype=(audio)", "title=(bagpipe) AND mediatype=(audio)"}
+	//sort := "sorts=btih"
 	//query := "fields=title,btih&q=mediatype%3Aaudio&sorts=btih"
 	//query := "fields=title,btih&q=title%3Aa*&sorts=btih"
 
@@ -101,25 +98,6 @@ func main() {
 
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
 
-	log.Println("ScrapeSearch")
-
-	search := ia.Search{
-		Query:      query,
-		Client:     client,
-		ChunkSize:  5000,
-		MaxResults: math.MaxInt64,
-		Retries:    5,
-	}
-
-	log.Println("Query=", query)
-
-	total, err := search.Total()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(err)
-	log.Println("total", total)
-
 	var count int64 = 0
 	var m3 *m3u.M3U
 
@@ -127,61 +105,99 @@ func main() {
 		m3 = new(m3u.M3U)
 	}
 
-	for {
-		results, err := search.Execute()
+	recMap := make(map[string]*m3u.Record)
+
+	for _, query := range queries {
+		//query = "q=" + url.PathEscape(query) + "&" + url.QueryEscape(sort)
+		query = "q=" + escapeQuery(query)
+		search := ia.Search{
+			Query:      query,
+			Client:     client,
+			ChunkSize:  5000,
+			MaxResults: math.MaxInt64,
+			Retries:    5,
+		}
+
+		if args.Verbose {
+			log.Println("Query=", query)
+		}
+
+		total, err := search.Total()
 		if err != nil {
 			log.Fatal(err)
 		}
-		if results == nil {
-			break
+		if args.Verbose {
+			log.Println("Search total:", total, query)
 		}
-		log.Println(len(results))
-
-		var item *ia.ItemTopLevelMetadata
-
-		for i := 0; i < len(results); i++ {
-			item, err = ia.GetItem(results[i].Identifier, client, itemCache)
+		for {
+			results, err := search.Execute()
 			if err != nil {
 				log.Fatal(err)
 			}
-			count = count + 1
-
-			if args.TxtResults {
-				outputResults(count, &item.Metadata)
+			if results == nil {
+				if args.Verbose {
+					log.Println("End results")
+				}
+				break
 			}
 
-			var records []*m3u.Record
-			if m3uOut || args.VerifyAudioURL {
-				records = makeM3UEntries(item)
-			}
-			if m3uOut {
-				addAll(m3, records)
-			}
+			var item *ia.ItemTopLevelMetadata
 
-			if args.LocalAudio {
-				log.Println("LocalAudio - unimplemented")
-			}
+			for i := 0; i < len(results); i++ {
+				if args.Verbose {
+					log.Println(i, "Getting: ", results[i].Identifier)
+				}
+				item, err = ia.GetItem(results[i].Identifier, client, itemCache)
+				if err != nil {
+					log.Fatal(err)
+				}
+				count = count + 1
 
-			if args.VerifyAudioURL {
-				for _, rec := range records {
-					err := verifyAudio(client, rec.URL)
-					if err != nil {
-						log.Fatal(err)
+				if args.TxtResults {
+					outputResults(count, &item.Metadata)
+					continue
+				}
+
+				var records []*m3u.Record
+				var downloadUrls []DownloadAudio
+				if m3uOut || args.VerifyAudioURL {
+					downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio)
+				}
+				if m3uOut && !args.Random {
+					addAll(m3, records)
+				}
+
+				if args.LocalAudio {
+					downloadAudio(downloadUrls)
+				}
+
+				if args.VerifyAudioURL {
+					for _, rec := range records {
+						err := verifyAudio(client, rec.URL)
+						if err != nil {
+							log.Fatal(err)
+						}
 					}
 				}
-			}
-			if args.CacheLoad {
-				// Do nothing
-			}
+				if args.CacheLoad {
+					// Do nothing
+				}
 
-			if args.Debug {
-				debug(item)
-			}
+				if args.Debug {
+					debug(item)
+				}
 
+			}
 		}
 	}
-
 	if m3uOut {
+		if args.Random {
+			randomizeAudio(m3, recMap)
+		}
+		if args.Verbose {
+			log.Println("Writing m3u file:", args.M3UFile)
+			log.Println("  # Entries:", len(recMap))
+		}
 		w := bufio.NewWriter(file)
 
 		if err := m3.Write(w); err != nil {

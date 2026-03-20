@@ -4,12 +4,17 @@ import (
 	"errors"
 	"fmt"
 	ia "github.com/gnewton/iascrape"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 )
 
+// Need to accept then escape; include "&"
+// Use net/url.QueryEscape(s string)
 var BadQueryChars = " =\""
 
 func checkArgs(args *args) (error, bool) {
@@ -28,20 +33,23 @@ func checkArgs(args *args) (error, bool) {
 	}
 
 	// Query
-	if strings.ContainsAny(args.Query, BadQueryChars) {
-		return errors.New("Query contains unescaped character(s). Cannot contain these characters " + BadQueryChars), false
+	for _, query := range args.Query {
+		if strings.ContainsAny(query, BadQueryChars) {
+			return errors.New("Query contains unescaped character(s). Cannot contain these characters " + BadQueryChars), false
+		}
 	}
 
 	if args.TxtResults || args.CacheLoad {
 		m3uOut = false
 	}
 
-	if len(args.Query) == 0 {
-		args.Query = AUDIOQUERY
-	} else {
-		args.Query = args.Query + SPACE_AND + AUDIOQUERY
+	for i := 0; i < len(args.Query); i++ {
+		if len(args.Query[i]) == 0 {
+			args.Query[i] = AUDIOQUERY
+		} else {
+			args.Query[i] = args.Query[i] + SPACE_AND + AUDIOQUERY
+		}
 	}
-
 	return nil, m3uOut
 }
 
@@ -52,9 +60,9 @@ func makeTitle(titles []string) string {
 	return titles[0]
 }
 
-func makeURL(item *ia.ItemTopLevelMetadata) string {
-	return "HTTP UNKNOWN"
-}
+//func makeURL(item *ia.ItemTopLevelMetadata) string {
+//return "HTTP UNKNOWN"
+//}
 
 func outputResults(count int64, item *ia.ItemMetadata) {
 	year := "????"
@@ -93,4 +101,42 @@ func verifyAudio(client *http.Client, url string) error {
 	log.Println("verifyAudio", url)
 	return ia.HeadUrl(client, url, 5, 3*time.Second)
 
+}
+
+func escapeQuery(q string) string {
+	return strings.ReplaceAll(url.PathEscape(q), "=", "%3A")
+}
+
+func downloadAudio(downloadUrls []DownloadAudio) error {
+	log.Println("=============================================")
+	for i := 0; i < len(downloadUrls); i++ {
+		log.Println("     ----- Download", downloadUrls[i].remoteUrl, downloadUrls[i].localFilename)
+		// Create the file
+		out, err := os.Create(downloadUrls[i].localFilename)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		// Get the data
+		resp, err := http.Get(downloadUrls[i].remoteUrl)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		// Check server response
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("bad status: %s", resp.Status)
+		}
+
+		// Writer the body to file
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
 }
