@@ -8,6 +8,7 @@ import (
 	ia "github.com/gnewton/iascrape"
 	m3u "github.com/k3a/go-m3u"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -17,9 +18,8 @@ import (
 	"time"
 )
 
-// Need to accept then escape; include "&"
-// Use net/url.QueryEscape(s string)
-var BadQueryChars = " =\""
+var SPACE_AND = "%20AND%20"
+var AUDIOQUERY = "mediatype%3A(audio)"
 
 func checkArgs(args *args) (error, bool) {
 	m3uOut := true
@@ -34,13 +34,6 @@ func checkArgs(args *args) (error, bool) {
 
 	if args.CacheLoad && args.LocalAudio {
 		return errors.New("Only one of -C and -L can be true"), false
-	}
-
-	// Query
-	for _, query := range args.Query {
-		if strings.ContainsAny(query, BadQueryChars) {
-			return errors.New("Query contains unescaped character(s). Cannot contain these characters " + BadQueryChars), false
-		}
 	}
 
 	if args.TxtResults || args.CacheLoad {
@@ -159,13 +152,9 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func handleItem(result ia.SearchItem, args args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string) error {
+func handleItem(item *ia.ItemTopLevelMetadata, args args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string) error {
 	if args.Verbose {
-		log.Println("Getting: ", result.Identifier)
-	}
-	item, err := ia.GetItem(result.Identifier, client, itemCache)
-	if err != nil {
-		return err
+		log.Println("Getting: ", item.Metadata.Identifier)
 	}
 
 	if rejectByField(&item.Metadata, rejectFields) {
@@ -179,7 +168,7 @@ func handleItem(result ia.SearchItem, args args, client *http.Client, itemCache 
 
 	var downloadUrls []DownloadAudio
 	if m3uOut || args.VerifyAudioURL {
-		downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio)
+		downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio, args.Formats)
 	}
 
 	if args.LocalAudio {
@@ -207,10 +196,13 @@ func handleItem(result ia.SearchItem, args args, client *http.Client, itemCache 
 }
 
 func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string) bool {
+	if rejectFields == nil {
+		return false
+	}
 	mm := ia.MakeMetadataItemFieldMap(item)
 
 	for fieldname, field := range mm {
-		log.Println(fieldname, field)
+		log.Println(fieldname, field, len(*field))
 		if rejectValues, ok := rejectFields[fieldname]; ok {
 			for i := 0; i < len(rejectValues); i++ {
 				if slices.Contains(*field, rejectValues[i]) {
@@ -222,4 +214,18 @@ func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string) bool
 	}
 
 	return false
+}
+
+func loadIncludeIDs(filename string) ([]string, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(data), "\n")
+
+	for i := 0; i < len(lines); i++ {
+		log.Println(i, ">>>>>>>>>>>>>>>>  ", lines[i])
+	}
+
+	return lines, nil
 }

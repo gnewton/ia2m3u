@@ -7,35 +7,18 @@ import (
 	m3u "github.com/k3a/go-m3u"
 	"log"
 	"math"
+	"regexp"
 	//"net/url"
 	"os"
 	//"time"
 )
 
-// texts, audio, movies, web, image, account, data, collection, software, etree, other
-// Default is to create an m3u file in ., referencing URLs for audio
-//  -c =  cache load; populates local ID cache; does not generate any m3u file
-// -d = directory for m3u file; if missing, dir is "."
-// -L = Sound files are local; Downloaded to -d directory
-// -q = query
-// -i = ID reject list; ascii list, one id per line
-// -r = Field reject list; json; form:
-//  [
-//   "fieldName1": [
-//                  "value1"
-//                  "value2"
-//                 ],
-// ]
-
-var SPACE_AND = "%20AND%20"
-var AUDIOQUERY = "mediatype%3A(audio)"
-
 type args struct {
 	CacheLoad        bool     `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
 	Debug            bool     `arg:"-D" help:"Debug mode"`
 	Dir              string   `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
-	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: MP3, VBR MP3, Ogg Vorbis, WAVE, Flac, AIFF. "`
-	IncludeIDList    string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
+	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
+	IncludeIDFile    string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
 	LocalAudio       bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
 	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
 	Query            []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
@@ -48,8 +31,20 @@ type args struct {
 	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
 }
 
+var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9-]+`)
+
+func clearString(str string) string {
+	return nonAlphanumericRegex.ReplaceAllString(str, "_")
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	str := "Test@%String#321gosamples.dev ـا ą ٦"
+	log.Println(clearString(str))
+
+	str = "The Massed Military Bands Of The Royal Scots Greys And Argyll And Sutherland Highlanders - (Scottish Soldiers) -- Elizabethan Serenade"
+	log.Println(clearString(str))
 
 	var args args
 
@@ -86,11 +81,36 @@ func main() {
 	}
 
 	client := ia.NewClient()
+	recMap := make(map[string]*m3u.Record)
+	var m3 *m3u.M3U
+	if m3uOut {
+		m3 = new(m3u.M3U)
+	}
+
+	if args.IncludeIDFile != "" {
+		ids, err := loadIncludeIDs(args.IncludeIDFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for i := 0; i < len(ids); i++ {
+			log.Println(i, "ZZZZZZZZZZZZ", ids[i])
+			if len(ids[i]) == 0 {
+				continue
+			}
+			item, err := ia.GetItem(ids[i], client, itemCache)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			handleItem(item, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
+
+		}
+	}
 
 	//query := "fields=year,title,collection&q=collection=78%20AND%20mediatype%3Aaudio"
 
 	//queries := []string{"collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio&sorts=btih"}
-	queries := []string{"collection=78rpm AND subject=Bagpipe AND mediatype=audio"}
+	queries := []string{"collection=78rpm AND subject=Bagpipe"}
 
 	//queries := []string{"title=(bagpipe) AND mediatype=(audio)", "title=(bagpipe) AND mediatype=(audio)"}
 	//sort := "sorts=btih"
@@ -107,14 +127,6 @@ func main() {
 	//query := "q=title%3A(bagpipe)%20AND%20mediatype%3A(audio)&sorts=title%20desc"
 
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
-
-	var m3 *m3u.M3U
-
-	if m3uOut {
-		m3 = new(m3u.M3U)
-	}
-
-	recMap := make(map[string]*m3u.Record)
 
 	for _, query := range queries {
 		//query = "q=" + url.PathEscape(query) + "&" + url.QueryEscape(sort)
@@ -153,7 +165,12 @@ func main() {
 			//var item *ia.ItemTopLevelMetadata
 
 			for i := 0; i < len(results); i++ {
-				handleItem(results[i], args, client, itemCache, recMap, m3, m3uOut, rejectFields)
+				item, err := ia.GetItem(results[i].Identifier, client, itemCache)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				handleItem(item, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
 
 			}
 		}
