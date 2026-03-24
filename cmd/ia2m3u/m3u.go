@@ -22,11 +22,13 @@ func m3uOut(title, url string) *m3u.Record {
 }
 
 var FileFormats = map[string]struct{}{
-	"AIFF":       struct{}{},
-	"Flac":       struct{}{},
-	"MP3":        struct{}{},
-	"Ogg Vorbis": struct{}{},
-	"VBR MP3":    struct{}{},
+	"128Kbps MP3": struct{}{},
+	"64Kbps MP3":  struct{}{},
+	"AIFF":        struct{}{},
+	"Flac":        struct{}{},
+	"MP3":         struct{}{},
+	"Ogg Vorbis":  struct{}{},
+	"VBR MP3":     struct{}{},
 }
 
 var AudioFileBaseUrl = "https://archive.org/download/" // + /{id}/{filename}.mp3
@@ -43,6 +45,7 @@ type FileFormat struct {
 }
 
 func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool, preferredFormats string) []DownloadAudio {
+	log.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	var download []DownloadAudio
 
 	year := ""
@@ -71,20 +74,29 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 
 	collectedFiles := make(map[string]*FileFormat)
 
+	// basefilename --> format --> File
+	nameFormatFile := make(map[string]map[string]*ia.File)
+
 	count := 0
 	if len(item.Files) > 0 {
 		//log.Println(title, item.Metadata.Identifier)
 		for _, file := range item.Files {
 			// Flac, WAVE, Ogg Vorbis,
 			if isFileFormat(file.Format) {
-				log.Println("HELLOOOOOOOOOOOOO")
-				collectFile(collectedFiles, &file)
+				collectFile(collectedFiles, nameFormatFile, &file)
 			}
-			log.Println("+++++++++++=   ", file.Format, file.Size, file.Name)
+		}
+	}
 
-			for _, format := range formats {
-				if file.Format == format {
-					log.Println("Choosing:", file.Format)
+	log.Println("$$$$$$$$$$$$$$")
+	for name, formatFile := range nameFormatFile {
+		log.Println(name, formatFile)
+		selected := false
+		for format, file := range formatFile {
+			log.Printf("--- %s  %+v\n", format, file)
+			for i := 0; i < len(formats); i++ {
+				if format == formats[i] {
+					log.Println("SELECTED", format, formats[i], file.Name, format)
 					rec := m3u.NewRecord()
 					// Tune title
 					if len(file.Title) != 0 {
@@ -94,7 +106,7 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 					}
 					rec.Title = creator + title + " -- " + rec.Title
 					if local {
-						rec.URL = makeLocalAudioURL(item.Metadata.Identifier, file.Name, file.Format, count) // Local
+						rec.URL = makeLocalAudioURL(item.Metadata.Identifier, file.Name, format, count) // Local
 					} else {
 						rec.URL = makeRemoteAudioURL(item.Metadata.Identifier, file.Name) // Local
 					}
@@ -109,24 +121,12 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 						if !random {
 							m3.Add(rec)
 						}
-
 					}
 					count++
-				}
-			}
-		}
-	}
-
-	for _, v := range collectedFiles {
-		selected := false
-		for thisFormat, _ := range v.Formats {
-			log.Println("BBBBBBBB", thisFormat)
-			for k := 0; k < len(formats); k++ {
-				if formats[k] == thisFormat {
-					log.Println("SELECTED", thisFormat)
 					selected = true
 					break
 				}
+
 			}
 			if selected {
 				break
@@ -142,14 +142,32 @@ func makeRemoteAudioURL(id, filename string) string {
 }
 
 func makeLocalAudioURL(id, filename string, format string, n int) string {
-	var suffix string
+	id = strings.TrimRight(id, ".")
+	suffix := "mp3"
+	subtype := ""
 
 	switch format {
-	case "MP3":
+	case "FLAC":
+		suffix = "flac"
+	case "Ogg Vorbis":
+		suffix = "ogg"
+	case "AIFF":
+		suffix = "aiff"
+	case "128Kbps MP3":
+		subtype = "_128k"
+	case "64Kbps MP3":
+		subtype = "_64k"
 	case "VBR MP3":
-		suffix = "mp3"
+		subtype = "_VBR"
 	}
-	return id + "__" + strconv.Itoa(n) + "." + suffix
+
+	log.Println("~~~~~~~  Localfile:", suffix, "-", format)
+	number := ""
+	if n < 10 {
+		number = "0"
+	}
+	number = number + strconv.Itoa(n)
+	return id + subtype + "__" + number + "." + suffix
 }
 
 func addAll(m3 *m3u.M3U, records []*m3u.Record) {
@@ -181,9 +199,9 @@ func isFileFormat(format string) bool {
 	return ok
 }
 
-func collectFile(collectedFiles map[string]*FileFormat, file *ia.File) {
+func collectFile(collectedFiles map[string]*FileFormat, coll map[string]map[string]*ia.File, file *ia.File) {
 	baseName := makeBaseName(file.Name)
-	log.Println("QQQ", file.Name, baseName)
+	log.Println("Filebasename", file.Name, file.Format, baseName)
 
 	var ff *FileFormat
 	var ok bool
@@ -191,10 +209,19 @@ func collectFile(collectedFiles map[string]*FileFormat, file *ia.File) {
 		ff = &FileFormat{
 			BaseFileName: baseName,
 			Formats:      make(map[string]struct{}),
+			File:         file,
 		}
 		collectedFiles[baseName] = ff
 	}
 	ff.Formats[file.Format] = struct{}{}
+	///////////////////////
+
+	var tuneFormat map[string]*ia.File
+	if tuneFormat, ok = coll[baseName]; !ok {
+		tuneFormat = make(map[string]*ia.File)
+		coll[baseName] = tuneFormat
+	}
+	tuneFormat[file.Format] = file
 }
 
 func makeBaseName(f string) string {
@@ -202,5 +229,7 @@ func makeBaseName(f string) string {
 	f = strings.TrimSuffix(f, filepath.Ext(f))
 	log.Println("B", f)
 	f = strings.TrimSuffix(f, "_vbr")
+	f = strings.TrimSuffix(f, "_64kb")
+	f = strings.TrimSuffix(f, "_128kb")
 	return f
 }

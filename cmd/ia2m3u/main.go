@@ -27,6 +27,7 @@ type args struct {
 	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
 	Smallest         bool     `arg:"-s" help:"Select the smallest sized audio file"`
 	TxtResults       bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
+	TitleInLocal     bool     `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
 	Verbose          bool     `arg:"-v" help:"Verbose output"`
 	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
 }
@@ -40,17 +41,17 @@ func clearString(str string) string {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	str := "Test@%String#321gosamples.dev ـا ą ٦"
-	log.Println(clearString(str))
+	// str := "Test@%String#321gosamples.dev ـا ą ٦"
+	// log.Println(clearString(str))
 
-	str = "The Massed Military Bands Of The Royal Scots Greys And Argyll And Sutherland Highlanders - (Scottish Soldiers) -- Elizabethan Serenade"
-	log.Println(clearString(str))
+	// str = "The Massed Military Bands Of The Royal Scots Greys And Argyll And Sutherland Highlanders - (Scottish Soldiers) -- Elizabethan Serenade"
+	// log.Println(clearString(str))
 
 	var args args
 
 	arg.MustParse(&args)
 
-	err, m3uOut := checkArgs(&args)
+	m3uOut, err := checkArgs(&args)
 	if err != nil {
 		log.Println(err)
 	}
@@ -86,13 +87,14 @@ func main() {
 	if m3uOut {
 		m3 = new(m3u.M3U)
 	}
-
+	var itemCount int64 = 0
 	if args.IncludeIDFile != "" {
 		ids, err := loadIncludeIDs(args.IncludeIDFile)
 		if err != nil {
 			log.Fatal(err)
 		}
 		for i := 0; i < len(ids); i++ {
+			itemCount++
 			log.Println(i, "ZZZZZZZZZZZZ", ids[i])
 			if len(ids[i]) == 0 {
 				continue
@@ -102,7 +104,7 @@ func main() {
 				log.Fatal(err)
 			}
 
-			handleItem(item, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
+			handleItem(item, itemCount, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
 
 		}
 	}
@@ -169,8 +171,8 @@ func main() {
 				if err != nil {
 					log.Fatal(err)
 				}
-
-				handleItem(item, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
+				itemCount++
+				handleItem(item, itemCount, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
 
 			}
 		}

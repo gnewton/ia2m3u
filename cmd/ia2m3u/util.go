@@ -21,19 +21,23 @@ import (
 var SPACE_AND = "%20AND%20"
 var AUDIOQUERY = "mediatype%3A(audio)"
 
-func checkArgs(args *args) (error, bool) {
+func checkArgs(args *args) (bool, error) {
 	m3uOut := true
 	//Conflicting args
 	if args.TxtResults && args.CacheLoad {
-		return errors.New("Only one of -O and -C can be true"), false
+		return false, errors.New("Only one of -O and -C can be true")
 	}
 
 	if args.TxtResults && args.LocalAudio {
-		return errors.New("Only one of -O and -L can be true"), false
+		return false, errors.New("Only one of -O and -L can be true")
 	}
 
 	if args.CacheLoad && args.LocalAudio {
-		return errors.New("Only one of -C and -L can be true"), false
+		return false, errors.New("Only one of -C and -L can be true")
+	}
+
+	if args.TitleInLocal {
+		return false, errors.New("TitleInLocal: not implemented")
 	}
 
 	if args.TxtResults || args.CacheLoad {
@@ -47,7 +51,7 @@ func checkArgs(args *args) (error, bool) {
 			args.Query[i] = args.Query[i] + SPACE_AND + AUDIOQUERY
 		}
 	}
-	return nil, m3uOut
+	return m3uOut, nil
 }
 
 func makeTitle(titles []string) string {
@@ -79,7 +83,8 @@ func outputResults(count int64, item *ia.ItemMetadata) {
 	}
 
 	//fmt.Println(count, "Year=", year, " Title=", title, " Creator=", creator, "  ID=", item.Identifier)
-	fmt.Printf("%d \t Year=%s \t Title=\"%s\"     Creator=\"%s\"     ID=%s\n", count, year, title, creator, item.Identifier)
+	//fmt.Printf("%d \t Year=%s \t Title=\"%s\"     Creator=\"%s\"     ID=%s\n", count, year, title, creator, item.Identifier)
+	fmt.Printf("%d \t %s \t \"%s\"  -- \"%s\"     ID=%s\n", count, year, title, creator, item.Identifier)
 	//fmt.Println(year, title, creator)
 }
 
@@ -104,11 +109,20 @@ func escapeQuery(q string) string {
 	return strings.ReplaceAll(url.PathEscape(q), "=", "%3A")
 }
 
+func checkFileExists(filePath string) bool {
+	_, error := os.Stat(filePath)
+	return !errors.Is(error, os.ErrNotExist)
+}
+
 func downloadAudio(downloadUrls []DownloadAudio) error {
 	log.Println("=============================================")
 	for i := 0; i < len(downloadUrls); i++ {
 		log.Println("     ----- Download", downloadUrls[i].remoteUrl, downloadUrls[i].localFilename)
 		// Create the file
+		if checkFileExists(downloadUrls[i].localFilename) {
+			log.Println("Exists")
+			continue
+		}
 		out, err := os.Create(downloadUrls[i].localFilename)
 		if err != nil {
 			return err
@@ -152,7 +166,7 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func handleItem(item *ia.ItemTopLevelMetadata, args args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string) error {
+func handleItem(item *ia.ItemTopLevelMetadata, itemCount int64, args args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string) error {
 	if args.Verbose {
 		log.Println("Getting: ", item.Metadata.Identifier)
 	}
@@ -162,7 +176,7 @@ func handleItem(item *ia.ItemTopLevelMetadata, args args, client *http.Client, i
 	}
 
 	if args.TxtResults {
-		outputResults(10, &item.Metadata)
+		outputResults(itemCount, &item.Metadata)
 		return nil
 	}
 
