@@ -68,6 +68,8 @@ func outputResults(count int64, item *ia.ItemMetadata) {
 		year = item.Years[0]
 	}
 
+	year = item.CanonicalYear
+
 	creator := "?"
 	if len(item.Creators) != 0 && item.Creators[0] != "" {
 		creator = item.Creators[0]

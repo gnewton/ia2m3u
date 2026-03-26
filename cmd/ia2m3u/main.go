@@ -103,7 +103,8 @@ func main() {
 
 	//queries := []string{"collection=78rpm AND subject=Bagpipe"}
 
-	queries := []string{"collection=78rpm AND title=blues"}
+	//queries := []string{"collection=78rpm AND title=blues"}
+	queries := []string{"collection=78rpm AND subject=blues"}
 
 	//queries := []string{"title=(bagpipe) AND mediatype=(audio)", "title=(bagpipe) AND mediatype=(audio)"}
 	//sort := "sorts=btih"

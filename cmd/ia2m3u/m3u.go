@@ -75,6 +75,9 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 	// basefilename --> format --> File
 	nameFormatFile := make(map[string]map[string]*ia.File)
 
+	/////////////////////
+	year = item.Metadata.CanonicalYear
+
 	count := 0
 	if len(item.Files) > 0 {
 		//log.Println(title, item.Metadata.Identifier)
