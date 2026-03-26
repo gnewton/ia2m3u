@@ -87,32 +87,23 @@ func main() {
 	if m3uOut {
 		m3 = new(m3u.M3U)
 	}
+	uniqueAudioFiles := make(map[string]struct{})
+
 	var itemCount int64 = 0
 	if args.IncludeIDFile != "" {
-		ids, err := loadIncludeIDs(args.IncludeIDFile)
+		err := loadExtraIDs(&args, &itemCount, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
-		}
-		for i := 0; i < len(ids); i++ {
-			itemCount++
-			log.Println(i, "ZZZZZZZZZZZZ", ids[i])
-			if len(ids[i]) == 0 {
-				continue
-			}
-			item, err := ia.GetItem(ids[i], client, itemCache)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			handleItem(item, itemCount, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
-
 		}
 	}
 
 	//query := "fields=year,title,collection&q=collection=78%20AND%20mediatype%3Aaudio"
 
 	//queries := []string{"collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio&sorts=btih"}
-	queries := []string{"collection=78rpm AND subject=Bagpipe"}
+
+	//queries := []string{"collection=78rpm AND subject=Bagpipe"}
+
+	queries := []string{"collection=78rpm AND title=blues"}
 
 	//queries := []string{"title=(bagpipe) AND mediatype=(audio)", "title=(bagpipe) AND mediatype=(audio)"}
 	//sort := "sorts=btih"
@@ -172,7 +163,7 @@ func main() {
 					log.Fatal(err)
 				}
 				itemCount++
-				handleItem(item, itemCount, args, client, itemCache, recMap, m3, m3uOut, rejectFields)
+				handleItem(item, itemCount, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles)
 
 			}
 		}

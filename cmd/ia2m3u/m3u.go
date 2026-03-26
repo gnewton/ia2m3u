@@ -44,23 +44,23 @@ type FileFormat struct {
 	File         *ia.File
 }
 
-func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool, preferredFormats string) []DownloadAudio {
+func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool, preferredFormats string, uniqueAudioFiles map[string]struct{}) []DownloadAudio {
 	log.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	var download []DownloadAudio
 
 	year := ""
-	if len(item.Metadata.Year) > 0 {
-		year = " - " + item.Metadata.Year[0]
+	if len(item.Metadata.Years) > 0 {
+		year = " - " + item.Metadata.Years[0]
 	}
 
 	title := ""
-	if len(item.Metadata.Title) > 0 {
-		title = "(" + item.Metadata.Title[0] + ")"
+	if len(item.Metadata.Titles) > 0 {
+		title = "(" + item.Metadata.Titles[0] + ")"
 	}
 
 	creator := ""
-	if len(item.Metadata.Creator) > 0 {
-		creator = item.Metadata.Creator[0] + "(" + year + ") - "
+	if len(item.Metadata.Creators) > 0 {
+		creator = item.Metadata.Creators[0] + "(" + year + ") - "
 	}
 
 	var formats []string
@@ -69,8 +69,6 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 	} else {
 		formats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
 	}
-
-	log.Println(formats)
 
 	collectedFiles := make(map[string]*FileFormat)
 
@@ -83,17 +81,22 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 		for _, file := range item.Files {
 			// Flac, WAVE, Ogg Vorbis,
 			if isFileFormat(file.Format) {
+				if _, ok := uniqueAudioFiles[file.MD5]; ok {
+					continue
+				} else {
+					uniqueAudioFiles[file.MD5] = struct{}{}
+				}
+
+				log.Println(file.MD5)
 				collectFile(collectedFiles, nameFormatFile, &file)
 			}
 		}
 	}
 
 	log.Println("$$$$$$$$$$$$$$")
-	for name, formatFile := range nameFormatFile {
-		log.Println(name, formatFile)
+	for _, formatFile := range nameFormatFile {
 		selected := false
 		for format, file := range formatFile {
-			log.Printf("--- %s  %+v\n", format, file)
 			for i := 0; i < len(formats); i++ {
 				if format == formats[i] {
 					log.Println("SELECTED", format, formats[i], file.Name, format)
@@ -201,7 +204,6 @@ func isFileFormat(format string) bool {
 
 func collectFile(collectedFiles map[string]*FileFormat, coll map[string]map[string]*ia.File, file *ia.File) {
 	baseName := makeBaseName(file.Name)
-	log.Println("Filebasename", file.Name, file.Format, baseName)
 
 	var ff *FileFormat
 	var ok bool
@@ -225,9 +227,7 @@ func collectFile(collectedFiles map[string]*FileFormat, coll map[string]map[stri
 }
 
 func makeBaseName(f string) string {
-	log.Println("A", f)
 	f = strings.TrimSuffix(f, filepath.Ext(f))
-	log.Println("B", f)
 	f = strings.TrimSuffix(f, "_vbr")
 	f = strings.TrimSuffix(f, "_64kb")
 	f = strings.TrimSuffix(f, "_128kb")
