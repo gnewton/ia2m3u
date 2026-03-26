@@ -36,19 +36,23 @@ func checkArgs(args *args) (bool, error) {
 		return false, errors.New("Only one of -C and -L can be true")
 	}
 
-	if args.TitleInLocal {
-		return false, errors.New("TitleInLocal: not implemented")
+	if len(args.Years) != 2 && len(args.Years) != 0 {
+		log.Fatal("Years requries 2 int args: start year end year")
+	}
+
+	if len(args.Years) == 2 && args.Years[0] >= args.Years[1] {
+		log.Fatal("Start year must be less than end year")
 	}
 
 	if args.TxtResults || args.CacheLoad {
 		m3uOut = false
 	}
 
-	for i := 0; i < len(args.Query); i++ {
-		if len(args.Query[i]) == 0 {
-			args.Query[i] = AUDIOQUERY
+	for i := 0; i < len(args.Queries); i++ {
+		if len(args.Queries[i]) == 0 {
+			args.Queries[i] = AUDIOQUERY
 		} else {
-			args.Query[i] = args.Query[i] + SPACE_AND + AUDIOQUERY
+			args.Queries[i] = args.Queries[i] + SPACE_AND + AUDIOQUERY
 		}
 	}
 	return m3uOut, nil
@@ -80,11 +84,7 @@ func outputResults(count int64, item *ia.ItemMetadata) {
 		title = item.Titles[0]
 	}
 
-	//fmt.Println(count, "Year=", year, " Title=", title, " Creator=", creator, "  ID=", item.Identifier)
-	//fmt.Printf("%d \t Year=%s \t Title=\"%s\"     Creator=\"%s\"     ID=%s\n", count, year, title, creator, item.Identifier)
-	fmt.Printf("%d \t %s  %s \t \"%s\"  -- \"%s\"     ID=%s  Subject=%s  Keywords=%s  Genre=%s  Collection=%s\n", count, item.Dates, year, title, creator, item.Identifier, item.Subjects, item.Keywords, item.Genres, item.Collections)
-	//fmt.Printf("%d \t %s  %s \t \"%s\"  -- \"%s\"     ID=%s  Subject=%s  Keywords=%s  Genre=%s \n", count, item.Date, year, title, creator, item.Identifier, item.Subject, item.Keywords, item.Genre)
-	//fmt.Println(year, title, creator)
+	fmt.Printf(" %d \t %s \t \"%s\"  -- \"%s\"     ID=%s  Subject=%s  Keywords=%s  Genre=%s  Collection=%s\n", count, year, title, creator, item.Identifier, item.Subjects, item.Keywords, item.Genres, item.Collections)
 }
 
 func debug(item *ia.ItemTopLevelMetadata) {
@@ -171,7 +171,7 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func handleItem(item *ia.ItemTopLevelMetadata, itemCount int64, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}) error {
+func handleItem(item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int64) error {
 	if args.Verbose {
 		log.Println("Getting metadata record: ", item.Metadata.Identifier)
 	}
@@ -184,7 +184,7 @@ func handleItem(item *ia.ItemTopLevelMetadata, itemCount int64, args *args, clie
 	}
 
 	if args.TxtResults {
-		outputResults(itemCount, &item.Metadata)
+		outputResults(count, &item.Metadata)
 		return nil
 	}
 
@@ -252,22 +252,23 @@ func loadIncludeIDs(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func loadExtraIDs(args *args, itemCount *int64, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
+func loadExtraIDs(args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
 	}
 	for i := 0; i < len(ids); i++ {
-		(*itemCount)++
+
 		if len(ids[i]) == 0 {
 			continue
 		}
-		item, err := ia.GetItem(ids[i], client, itemCache)
+		item, err := ia.GetItem(ids[i], client, itemCache, args.Verbose)
 		if err != nil {
 			return err
 		}
 
-		err = handleItem(item, *itemCount, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles)
+		err = handleItem(item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
+
 		if err != nil {
 			return err
 		}

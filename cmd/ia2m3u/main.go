@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"regexp"
+	"strconv"
 	//"net/url"
 	"os"
 	//"time"
@@ -20,8 +21,10 @@ type args struct {
 	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
 	IncludeIDFile    string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
 	LocalAudio       bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
+	Limit            int64    `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
 	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
-	Query            []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
+	Offset           int64    `arg:"-o,--offset" help:"Skit this number of results before starting limit count" default:"0"`
+	Queries          []string `arg:"-q,--query,required" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random           bool     `arg:"-r" help:"Order of audio items in playlist is random"`
 	RejectFieldsFile string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
 	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
@@ -30,6 +33,7 @@ type args struct {
 	TitleInLocal     bool     `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
 	Verbose          bool     `arg:"-v" help:"Verbose output"`
 	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
+	Years            []int    `arg:"-y" help:"Limit by year range. Two year values, start end (inclusive). i.e. -y 1980 1990"`
 }
 
 var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9-]+`)
@@ -89,9 +93,16 @@ func main() {
 	}
 	uniqueAudioFiles := make(map[string]struct{})
 
-	var itemCount int64 = 0
+	offset := args.Offset
+	limit := args.Limit
+
+	if args.Verbose {
+		log.Println("   Offset", offset)
+		log.Println("   Limit", limit)
+	}
+
 	if args.IncludeIDFile != "" {
-		err := loadExtraIDs(&args, &itemCount, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
+		err := loadExtraIDs(&args, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -104,7 +115,12 @@ func main() {
 	//queries := []string{"collection=78rpm AND subject=Bagpipe"}
 
 	//queries := []string{"collection=78rpm AND title=blues"}
-	queries := []string{"collection=78rpm AND subject=blues"}
+
+	//queries := []string{"collection=78rpm AND subject=blues"}
+
+	if len(args.Years) == 2 {
+		args.Queries[0] = args.Queries[0] + " AND date:[" + strconv.Itoa(args.Years[0]) + "-01-01 TO " + strconv.Itoa(args.Years[1]) + "-12-31]"
+	}
 
 	//queries := []string{"title=(bagpipe) AND mediatype=(audio)", "title=(bagpipe) AND mediatype=(audio)"}
 	//sort := "sorts=btih"
@@ -122,7 +138,7 @@ func main() {
 
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
 
-	for _, query := range queries {
+	for _, query := range args.Queries {
 		//query = "q=" + url.PathEscape(query) + "&" + url.QueryEscape(sort)
 		query = "q=" + escapeQuery(query)
 		search := ia.Search{
@@ -131,6 +147,7 @@ func main() {
 			ChunkSize:  5000,
 			MaxResults: math.MaxInt64,
 			Retries:    5,
+			Verbose:    args.Verbose,
 		}
 
 		if args.Verbose {
@@ -142,9 +159,16 @@ func main() {
 			log.Fatal(err)
 		}
 		if args.Verbose {
-			log.Println("Search total:", total, query)
+			log.Println("")
+			log.Printf("---- Search total: %d        query: %s\n", total, query)
 		}
+
+		var count int64 = 0
+		stop := false
 		for {
+			if stop {
+				break
+			}
 			results, err := search.Execute()
 			if err != nil {
 				log.Fatal(err)
@@ -159,13 +183,19 @@ func main() {
 			//var item *ia.ItemTopLevelMetadata
 
 			for i := 0; i < len(results); i++ {
-				item, err := ia.GetItem(results[i].Identifier, client, itemCache)
-				if err != nil {
-					log.Fatal(err)
+				if count > offset {
+					item, err := ia.GetItem(results[i].Identifier, client, itemCache, args.Verbose)
+					if err != nil {
+						log.Fatal(err)
+					}
+					handleItem(item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
 				}
-				itemCount++
-				handleItem(item, itemCount, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles)
 
+				count++
+				if count > offset+limit {
+					stop = true
+					break
+				}
 			}
 		}
 	}

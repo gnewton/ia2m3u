@@ -45,7 +45,7 @@ type FileFormat struct {
 }
 
 func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool, preferredFormats string, uniqueAudioFiles map[string]struct{}) []DownloadAudio {
-	log.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
 	var download []DownloadAudio
 
 	year := ""
@@ -89,20 +89,16 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 				} else {
 					uniqueAudioFiles[file.MD5] = struct{}{}
 				}
-
-				log.Println(file.MD5)
 				collectFile(collectedFiles, nameFormatFile, &file)
 			}
 		}
 	}
 
-	log.Println("$$$$$$$$$$$$$$")
 	for _, formatFile := range nameFormatFile {
 		selected := false
 		for format, file := range formatFile {
 			for i := 0; i < len(formats); i++ {
 				if format == formats[i] {
-					log.Println("SELECTED", format, formats[i], file.Name, format)
 					rec := m3u.NewRecord()
 					// Tune title
 					if len(file.Title) != 0 {
