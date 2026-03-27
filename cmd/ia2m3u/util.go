@@ -66,26 +66,77 @@ func makeTitle(titles []string) string {
 	return titles[0]
 }
 
-func outputResults(count int64, item *ia.ItemMetadata) {
-	year := "????"
-
-	if len(item.Years) != 0 && item.Years[0] != "" {
-		year = item.Years[0]
-	}
-
-	year = item.CanonicalYear
+func makeTitleCreator(titles, creators []string) (string, string) {
 
 	creator := "?"
-	if len(item.Creators) != 0 && item.Creators[0] != "" {
-		creator = item.Creators[0]
+	if len(creators) != 0 && creators[0] != "" {
+		creator = creators[0]
 	}
 
 	title := "?"
-	if len(item.Titles) != 0 && item.Titles[0] != "" {
-		title = item.Titles[0]
+	if len(titles) != 0 && titles[0] != "" {
+		title = titles[0]
+	}
+	return title, creator
+}
+
+func simpleHTML(count int64, item *ia.ItemTopLevelMetadata) {
+	fmt.Println("<li>")
+
+	meta := item.Metadata
+	title, creator := makeTitleCreator(meta.Titles, meta.Creators)
+	writeTopTitle(title, creator, meta.CanonicalYear, meta.Identifier, item.Metadata.Subjects)
+	fmt.Println("<ul>")
+	if len(item.Files) > 0 {
+		writeAudioFiles(item.Files, meta.Identifier)
+	}
+	fmt.Println("</ul>")
+	fmt.Println("</li>")
+}
+
+func writeTopTitle(title, creator, year, id string, subjects []string) {
+	//fmt.Println(year, "-", title, "--", creator, id)
+	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", year, id, title, creator, len(subjects), subjects, id)
+}
+
+func writeAudioFiles(files []ia.File, id string) {
+	filenameTitle := make(map[string]string)
+	for i := 0; i < len(files); i++ {
+		f := files[i]
+		if _, ok := FileFormats[f.Format]; ok {
+
+			fmt.Println("<li>")
+
+			fmt.Printf("<a href=\"%s\">%s</a> %s", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle), f.Format)
+
+			fmt.Println("</li>")
+
+			if len(f.Title) != 0 {
+				filenameTitle[f.Name] = f.Title
+			}
+		}
+	}
+}
+
+func makeFileTitle(title, name string, original []string, filenameTitle map[string]string) string {
+	if len(title) != 0 {
+		return title
 	}
 
-	fmt.Printf(" %d \t %s \t \"%s\"  -- \"%s\"     ID=%s  Subject=%s  Keywords=%s  Genre=%s  Collection=%s\n", count, year, title, creator, item.Identifier, item.Subjects, item.Keywords, item.Genres, item.Collections)
+	if len(original) != 0 && len(original[0]) != 0 {
+		if title, ok := filenameTitle[original[0]]; ok {
+			return title
+		}
+	}
+
+	return name
+
+}
+
+func outputResults(count int64, item *ia.ItemMetadata) {
+	title, creator := makeTitleCreator(item.Titles, item.Creators)
+
+	fmt.Printf(" %d \t %s \t \"%s\"  -- \"%s\"     ID=%s  Subject=%s  Keywords=%s  Genre=%s  Collection=%s\n", count, item.CanonicalYear, title, creator, item.Identifier, item.Subjects, item.Keywords, item.Genres, item.Collections)
 }
 
 func debug(item *ia.ItemTopLevelMetadata) {
@@ -160,27 +211,42 @@ type Rejects struct {
 	RejectFields map[string][]string `json:"rejects"`
 }
 
-func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]string) error {
+func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]string, verbose bool) error {
 	b, err := os.ReadFile(rejectFilename)
 	if err != nil {
 		log.Fatalf("Failed to read file: %v\n", err)
 	}
 
 	err = json.Unmarshal(b, rejectFields)
-	log.Println(*rejectFields)
+	if err != nil {
+		log.Println("Error loading rejectFields JSON from", rejectFilename)
+		log.Println(err)
+	}
+	if verbose {
+		log.Println("Reject fields: ", *rejectFields)
+	}
 
 	return err
 }
 
 func handleItem(item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int64) error {
+	if len(item.Metadata.Identifier) == 0 {
+		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
+		return nil
+	}
 	if args.Verbose {
-		log.Println("Getting metadata record: ", item.Metadata.Identifier)
+		log.Println("HandleItem: Getting metadata record: ", item.Metadata.Identifier)
 	}
 
-	if rejectByField(&item.Metadata, rejectFields) {
+	if rejectByField(&item.Metadata, rejectFields, args.Verbose) {
 		if args.Verbose {
 			log.Println("Rejected by field")
 		}
+		return nil
+	}
+
+	if args.HTMLResults {
+		simpleHTML(count, item)
 		return nil
 	}
 
@@ -218,18 +284,19 @@ func handleItem(item *ia.ItemTopLevelMetadata, args *args, client *http.Client, 
 	return nil
 }
 
-func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string) bool {
+func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string, verbose bool) bool {
 	if rejectFields == nil { // Don't rejectcompile
 		return false
 	}
 	mm := ia.MakeMetadataItemFieldMap(item)
 
 	for fieldname, field := range mm {
-		log.Println(fieldname, field, len(*field))
 		if rejectValues, ok := rejectFields[fieldname]; ok {
 			for i := 0; i < len(rejectValues); i++ {
 				if slices.Contains(*field, rejectValues[i]) {
-					log.Println("----------------- REJECTED", *field, " == ", rejectValues[i])
+					if verbose {
+						log.Println("----------------- REJECTED", *field, " == ", rejectValues[i])
+					}
 					return true
 				}
 			}
@@ -246,14 +313,10 @@ func loadIncludeIDs(filename string) ([]string, error) {
 	}
 	lines := strings.Split(string(data), "\n")
 
-	for i := 0; i < len(lines); i++ {
-		log.Println(i, ">>>>>>>>>>>>>>>>  ", lines[i])
-	}
-
 	return lines, nil
 }
 
-func loadExtraIDs(args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
+func loadExtraIDs(args *args, loadedIDs map[string]struct{}, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
@@ -263,9 +326,13 @@ func loadExtraIDs(args *args, client *http.Client, itemCache *ia.Cache, recMap m
 		if len(ids[i]) == 0 {
 			continue
 		}
-		item, err := ia.GetItem(ids[i], client, itemCache, args.Verbose)
+		item, err := ia.GetItem(ids[i], loadedIDs, client, itemCache, args.Verbose)
 		if err != nil {
 			return err
+		}
+
+		if item == nil {
+			continue
 		}
 
 		err = handleItem(item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)

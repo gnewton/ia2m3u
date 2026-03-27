@@ -30,6 +30,7 @@ type args struct {
 	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
 	Smallest         bool     `arg:"-s" help:"Select the smallest sized audio file"`
 	TxtResults       bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
+	HTMLResults      bool     `arg:"-H,--simplehtml" help:"Produce simple HTML output to stdout. Does not produce any m3u output"`
 	TitleInLocal     bool     `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
 	Verbose          bool     `arg:"-v" help:"Verbose output"`
 	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
@@ -76,12 +77,10 @@ func main() {
 
 	var rejectFields map[string][]string
 	if args.RejectFieldsFile != "" {
-		err := loadRejectFieldsFile(args.RejectFieldsFile, &rejectFields)
+		err := loadRejectFieldsFile(args.RejectFieldsFile, &rejectFields, args.Verbose)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(rejectFields, len(rejectFields))
-		log.Println("MMMMM")
 
 	}
 
@@ -101,8 +100,10 @@ func main() {
 		log.Println("   Limit", limit)
 	}
 
+	loadedIDs := make(map[string]struct{})
+
 	if args.IncludeIDFile != "" {
-		err := loadExtraIDs(&args, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
+		err := loadExtraIDs(&args, loadedIDs, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -163,6 +164,8 @@ func main() {
 			log.Printf("---- Search total: %d        query: %s\n", total, query)
 		}
 
+		//search.Query = search.Query + "&sorts=btih" //"&sort%5B%5D=year+desc"
+		search.Query = search.Query + "&sorts=year+desc" //"&sort%5B%5D=year+desc"
 		var count int64 = 0
 		stop := false
 		for {
@@ -184,9 +187,12 @@ func main() {
 
 			for i := 0; i < len(results); i++ {
 				if count > offset {
-					item, err := ia.GetItem(results[i].Identifier, client, itemCache, args.Verbose)
+					item, err := ia.GetItem(results[i].Identifier, loadedIDs, client, itemCache, args.Verbose)
 					if err != nil {
 						log.Fatal(err)
+					}
+					if item == nil {
+						continue
 					}
 					handleItem(item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
 				}
