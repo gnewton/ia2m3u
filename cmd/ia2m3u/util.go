@@ -55,6 +55,7 @@ func checkArgs(args *args) (bool, error) {
 			args.Queries[i] = args.Queries[i] + SPACE_AND + AUDIOQUERY
 		}
 	}
+
 	return m3uOut, nil
 }
 

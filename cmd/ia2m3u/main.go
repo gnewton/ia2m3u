@@ -24,7 +24,7 @@ type args struct {
 	Limit            int64    `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
 	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
 	Offset           int64    `arg:"-o,--offset" help:"Skit this number of results before starting limit count" default:"0"`
-	Queries          []string `arg:"-q,--query,required" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
+	Queries          []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random           bool     `arg:"-r" help:"Order of audio items in playlist is random"`
 	RejectFieldsFile string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
 	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
