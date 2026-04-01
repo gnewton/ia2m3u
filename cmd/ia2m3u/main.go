@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	arg "github.com/alexflint/go-arg"
 	ia "github.com/gnewton/iascrape"
 	m3u "github.com/k3a/go-m3u"
@@ -84,6 +85,12 @@ func main() {
 
 	}
 
+	if args.HTMLResults {
+		fmt.Println("<html>")
+		fmt.Println("<body>")
+		fmt.Println("<table border>")
+	}
+
 	client := ia.NewClient()
 	recMap := make(map[string]*m3u.Record)
 	var m3 *m3u.M3U
@@ -113,7 +120,7 @@ func main() {
 
 	//queries := []string{"collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio&sorts=btih"}
 
-	//queries := []string{"collection=78rpm AND subject=Bagpipe"}
+	//queries := []string{"collection=78rpm AND subject=Bagphanpe"}
 
 	//queries := []string{"collection=78rpm AND title=blues"}
 
@@ -220,6 +227,13 @@ func main() {
 		}
 		w.Flush()
 	}
+
+	if args.HTMLResults {
+		fmt.Println("</table>")
+		fmt.Println("</body>")
+		fmt.Println("</html>")
+	}
+
 }
 
 var rejectFieldString_ = map[string][]string{

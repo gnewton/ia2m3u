@@ -31,8 +31,6 @@ var FileFormats = map[string]struct{}{
 	"VBR MP3":     struct{}{},
 }
 
-var AudioFileBaseUrl = "https://archive.org/download/" // + /{id}/{filename}.mp3
-
 type DownloadAudio struct {
 	localFilename string
 	remoteUrl     string
@@ -106,7 +104,7 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 					} else {
 						rec.Title = "[Title unknown]"
 					}
-					rec.Title = creator + title + " -- " + rec.Title
+					rec.Title = year + " - " + creator + title + " -- " + rec.Title
 					if local {
 						rec.URL = makeLocalAudioURL(item.Metadata.Identifier, file.Name, format, count) // Local
 					} else {

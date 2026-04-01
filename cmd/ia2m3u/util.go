@@ -21,6 +21,17 @@ import (
 var SPACE_AND = "%20AND%20"
 var AUDIOQUERY = "mediatype%3A(audio)"
 
+// Archive.org urls, partial urls and specific filenames
+var AudioFileBaseUrl = "https://archive.org/download/" // + /{id}/{filename}.mp3
+var ItemBaseUrl = "https://archive.org/details/"
+var LPBackcoverImage_Format = "Single Page Processed JP2 ZIP"
+var LPBackcoverImage_Suffix = "_jp2.zip"
+var LPImagesPHP = "/view_archive.php?archive="
+var Thumb = "__ia_thumb.jpg"
+var baseUrl = "https://archive.org/metadata/"
+
+//var uilleanSource = "https://commons.wikimedia.org/wiki/File:UilleannPipes.jpg"
+
 func checkArgs(args *args) (bool, error) {
 	m3uOut := true
 	//Conflicting args
@@ -78,59 +89,6 @@ func makeTitleCreator(titles, creators []string) (string, string) {
 		title = titles[0]
 	}
 	return title, creator
-}
-
-func simpleHTML(count int64, item *ia.ItemTopLevelMetadata) {
-	fmt.Println("<li>")
-
-	meta := item.Metadata
-	title, creator := makeTitleCreator(meta.Titles, meta.Creators)
-	writeTopTitle(title, creator, meta.CanonicalYear, meta.Identifier, item.Metadata.Subjects)
-	fmt.Println("<ul>")
-	if len(item.Files) > 0 {
-		writeAudioFiles(item.Files, meta.Identifier)
-	}
-	fmt.Println("</ul>")
-	fmt.Println("</li>")
-}
-
-func writeTopTitle(title, creator, year, id string, subjects []string) {
-	//fmt.Println(year, "-", title, "--", creator, id)
-	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", year, id, title, creator, len(subjects), subjects, id)
-}
-
-func writeAudioFiles(files []ia.File, id string) {
-	filenameTitle := make(map[string]string)
-	for i := 0; i < len(files); i++ {
-		f := files[i]
-		if _, ok := FileFormats[f.Format]; ok {
-
-			fmt.Println("<li>")
-
-			fmt.Printf("<a href=\"%s\">%s</a> %s", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle), f.Format)
-
-			fmt.Println("</li>")
-
-			if len(f.Title) != 0 {
-				filenameTitle[f.Name] = f.Title
-			}
-		}
-	}
-}
-
-func makeFileTitle(title, name string, original []string, filenameTitle map[string]string) string {
-	if len(title) != 0 {
-		return title
-	}
-
-	if len(original) != 0 && len(original[0]) != 0 {
-		if title, ok := filenameTitle[original[0]]; ok {
-			return title
-		}
-	}
-
-	return name
-
 }
 
 func outputResults(count int64, item *ia.ItemMetadata) {
@@ -246,6 +204,7 @@ func handleItem(item *ia.ItemTopLevelMetadata, args *args, client *http.Client, 
 	}
 
 	if args.HTMLResults {
+
 		simpleHTML(count, item)
 		return nil
 	}
@@ -286,6 +245,7 @@ func handleItem(item *ia.ItemTopLevelMetadata, args *args, client *http.Client, 
 
 func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string, verbose bool) bool {
 	if rejectFields == nil { // Don't rejectcompile
+		log.Println("$$$$$$$$$$NO REJECT POSSIBLE$$$$$$$$$$$$$$$$$$$$$$")
 		return false
 	}
 	mm := ia.MakeMetadataItemFieldMap(item)
@@ -343,4 +303,32 @@ func loadExtraIDs(args *args, loadedIDs map[string]struct{}, client *http.Client
 
 	}
 	return nil
+}
+
+func hasJP2ZipFile(files []ia.File, identifier string) (bool, string) {
+	for _, file := range files {
+		if file.Format == LPBackcoverImage_Format &&
+			file.Name == identifier+LPBackcoverImage_Suffix {
+			log.Println("99991------------", file.Name)
+
+			return true, file.Name
+		}
+	}
+	return false, ""
+}
+
+// d1 + LPImagesPHP + jp2-zip-FileName + "&file=" + jp2-zip-FileName_no_zip_suffix + "%2F" + identifier + "-band_0001.jp2&ext=jpg"
+func makeJP2ImageUrl(filename string, tm *ia.ItemTopLevelMetadata, fileNumber string) string {
+
+	//return "https://" + tm.D1 + LPImagesPHP + tm.Metadata.Identifier + "/" + filename + "&file=" + filename[0:len(filename)-4] + "%2F" + tm.Metadata.Identifier + "_0001.jp2&ext=jpg"
+
+	return "https://" + tm.D1 + LPImagesPHP + tm.Dir + "/" + filename + "&file=" + filename[0:len(filename)-4] + "%2F" + tm.Metadata.Identifier + "_000" + fileNumber + ".jp2&ext=jpg"
+}
+
+func getFlacOpusURLs(id string) (string, string, string, string) {
+	return AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side1.flac",
+		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side2.flac",
+		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side1.opus",
+		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side2.opus"
+
 }
