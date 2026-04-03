@@ -118,7 +118,7 @@ func main() {
 
 	//query := "fields=year,title,collection&q=collection=78%20AND%20mediatype%3Aaudio"
 
-	//queries := []string{"collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio&sorts=btih"}
+	//queries := []string{"collection%3A78rpm%20AND%20subject%3ABagpipe%20AND%20mediatype%3Aaudio&sorts=btiho"}
 
 	//queries := []string{"collection=78rpm AND subject=Bagphanpe"}
 
