@@ -91,10 +91,10 @@ func makeTitleCreator(titles, creators []string) (string, string) {
 	return title, creator
 }
 
-func outputResults(count int64, item *ia.ItemMetadata) {
+func outputResults(count int, item *ia.ItemMetadata) {
 	title, creator := makeTitleCreator(item.Titles, item.Creators)
 
-	fmt.Printf(" %d \t %s \t \"%s\"  -- \"%s\"     ID=%s  Subject=%s  Keywords=%s  Genre=%s  Collection=%s\n", count, item.CanonicalYear, title, creator, item.Identifier, item.Subjects, item.Keywords, item.Genres, item.Collections)
+	fmt.Printf(" %d \t %d \t \"%s\"  -- \"%s\"     ID=%s  Subject=%s  Keywords=%s  Genre=%s  Collection=%s\n", count, item.CanonicalYear, title, creator, item.Identifier, item.Subjects, item.Keywords, item.Genres, item.Collections)
 }
 
 func debug(item *ia.ItemTopLevelMetadata) {
@@ -187,7 +187,7 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func handleItem(item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int64) error {
+func handleItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
 	if len(item.Metadata.Identifier) == 0 {
 		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
 		return nil
@@ -203,9 +203,11 @@ func handleItem(item *ia.ItemTopLevelMetadata, args *args, client *http.Client, 
 		return nil
 	}
 
+	*acceptedTunes = append(*acceptedTunes, item)
+
 	if args.HTMLResults {
 
-		simpleHTML(count, item)
+		//simpleHTML(count, item)
 		return nil
 	}
 
@@ -276,7 +278,7 @@ func loadIncludeIDs(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func loadExtraIDs(args *args, loadedIDs map[string]struct{}, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
+func loadExtraIDs(acceptedTunes *[]*ia.ItemTopLevelMetadata, args *args, loadedIDs map[string]struct{}, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
@@ -295,7 +297,7 @@ func loadExtraIDs(args *args, loadedIDs map[string]struct{}, client *http.Client
 			continue
 		}
 
-		err = handleItem(item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
+		err = handleItem(acceptedTunes, item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
 
 		if err != nil {
 			return err
@@ -309,8 +311,6 @@ func hasJP2ZipFile(files []ia.File, identifier string) (bool, string) {
 	for _, file := range files {
 		if file.Format == LPBackcoverImage_Format &&
 			file.Name == identifier+LPBackcoverImage_Suffix {
-			log.Println("99991------------", file.Name)
-
 			return true, file.Name
 		}
 	}

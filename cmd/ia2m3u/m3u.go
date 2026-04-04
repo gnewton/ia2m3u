@@ -46,10 +46,7 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 
 	var download []DownloadAudio
 
-	year := ""
-	if len(item.Metadata.Years) > 0 {
-		year = " - " + item.Metadata.Years[0]
-	}
+	year := strconv.Itoa(item.Metadata.CanonicalYear)
 
 	title := ""
 	if len(item.Metadata.Titles) > 0 {
@@ -74,7 +71,6 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 	nameFormatFile := make(map[string]map[string]*ia.File)
 
 	/////////////////////
-	year = item.Metadata.CanonicalYear
 
 	count := 0
 	if len(item.Files) > 0 {

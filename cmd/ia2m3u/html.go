@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	ia "github.com/gnewton/iascrape"
+	"log"
 	"net/url"
+	"strconv"
 )
 
-func simpleHTML(count int64, item *ia.ItemTopLevelMetadata) {
+func simpleHTML(item *ia.ItemTopLevelMetadata) {
 	meta := item.Metadata
 	fmt.Println("")
 	fmt.Println("")
@@ -38,19 +40,30 @@ func simpleHTML(count int64, item *ia.ItemTopLevelMetadata) {
 	fmt.Println("</td>")
 
 	fmt.Println("")
-	fmt.Println("<td valign='top'>")
+	fmt.Println("<td valign='top' colspan='2'>")
 	fmt.Println("<b>")
 
+	var year string
+	if meta.CanonicalYear == 0 {
+		year = "[Unknown year]"
+	} else {
+		year = strconv.Itoa(meta.CanonicalYear)
+	}
+
 	title, creator := makeTitleCreator(meta.Titles, meta.Creators)
-	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", meta.CanonicalYear, meta.Identifier, title, creator, len(meta.Subjects), meta.Subjects, meta.Identifier)
+	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", year, meta.Identifier, title, creator, len(meta.Subjects), meta.Subjects, meta.Identifier)
+
+	fmt.Printf(" <a href=\"https://archive.org/metadata/%s\">JSON</a>\n", meta.Identifier)
+
 	fmt.Println("</td>")
 	fmt.Println("</tr>")
 
 	if len(item.Files) > 0 {
+		log.Println("%%%%%%%%%%%%%%%%%%%%%%% ", meta.Identifier)
 		writeAudioFiles2(item.Files, meta.Identifier)
 	}
 
-	fmt.Println("<tr>  <td colspan='2'> <hr> </td> </tr>")
+	fmt.Println("<tr>  <td colspan='3'> <hr> </td> </tr>")
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("")
@@ -60,8 +73,10 @@ func countAudioFiles(files []ia.File) int {
 	n := 0
 	for i := 0; i < len(files); i++ {
 		f := files[i]
+
 		if _, ok := FileFormats[f.Format]; ok {
 			n++
+			//log.Println("+++++++++++ 567", f.Format)
 		}
 	}
 	return n
@@ -73,15 +88,16 @@ func writeAudioFiles2(files []ia.File, id string) {
 	for i := 0; i < len(files); i++ {
 		f := files[i]
 		if _, ok := FileFormats[f.Format]; ok {
+			log.Println(f.Format, f.Name, f.Title)
 			n++
 			fmt.Println("")
 			fmt.Println("<tr valign='top'>")
-			fmt.Println("<td width='90%'>")
-			fmt.Println(n)
-			fmt.Printf(". <a href=\"%s\">%s</a> %s", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle), f.Format)
-			//fmt.Println("</td>")
+			fmt.Println("<td width='35%'>")
+			fmt.Printf("%d.\n", n)
+			fmt.Printf("<a href=\"%s\">%s</a> %s", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle), f.Format)
+			fmt.Println("</td>")
 
-			//			fmt.Println("<td>")
+			fmt.Println("<td>")
 			// fmt.Println("<br>")
 			fmt.Println("<p>")
 			fmt.Println("      <audio controls>")
@@ -89,7 +105,7 @@ func writeAudioFiles2(files []ia.File, id string) {
 			fmt.Print("        <source src=\"")
 			fmt.Print(AudioFileBaseUrl + url.PathEscape(id) + "/" + url.PathEscape(f.Name))
 			fmt.Print("\"")
-			fmt.Print("  type='audio/mpeg'>")
+			fmt.Print("'>")
 			fmt.Println("        Your browser does not support the audio element.")
 			fmt.Println("      </audio>")
 			fmt.Println("<br>")
@@ -109,6 +125,8 @@ func writeTopTitle(title, creator, year, id string, subjects []string) {
 	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", year, id, title, creator, len(subjects), subjects, id)
 }
 
+// There isn't always a title, so use 1) the name of the original (if exists); or 2) the filename;
+// cache the filename
 func makeFileTitle(title, name string, original []string, filenameTitle map[string]string) string {
 	if len(title) != 0 {
 		return title

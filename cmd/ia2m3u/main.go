@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"cmp"
 	"fmt"
 	arg "github.com/alexflint/go-arg"
 	ia "github.com/gnewton/iascrape"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	//"net/url"
 	"os"
@@ -62,6 +64,8 @@ func main() {
 		log.Println(err)
 	}
 
+	log.Println(args.Formats)
+
 	var file *os.File
 	if m3uOut {
 		file, err = os.Create(args.M3UFile)
@@ -85,12 +89,6 @@ func main() {
 
 	}
 
-	if args.HTMLResults {
-		fmt.Println("<html>")
-		fmt.Println("<body>")
-		fmt.Println("<table border>")
-	}
-
 	client := ia.NewClient()
 	recMap := make(map[string]*m3u.Record)
 	var m3 *m3u.M3U
@@ -107,10 +105,12 @@ func main() {
 		log.Println("   Limit", limit)
 	}
 
+	var acceptedTunes []*ia.ItemTopLevelMetadata
+
 	loadedIDs := make(map[string]struct{})
 
 	if args.IncludeIDFile != "" {
-		err := loadExtraIDs(&args, loadedIDs, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
+		err := loadExtraIDs(&acceptedTunes, &args, loadedIDs, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -173,7 +173,7 @@ func main() {
 
 		//search.Query = search.Query + "&sorts=btih" //"&sort%5B%5D=year+desc"
 		search.Query = search.Query + "&sorts=year+desc" //"&sort%5B%5D=year+desc"
-		var count int64 = 0
+		var count int = 0
 		stop := false
 		for {
 			if stop {
@@ -193,7 +193,7 @@ func main() {
 			//var item *ia.ItemTopLevelMetadata
 
 			for i := 0; i < len(results); i++ {
-				if count > offset {
+				if int64(count) > offset {
 					item, err := ia.GetItem(results[i].Identifier, loadedIDs, client, itemCache, args.Verbose)
 					if err != nil {
 						log.Fatal(err)
@@ -201,11 +201,11 @@ func main() {
 					if item == nil {
 						continue
 					}
-					handleItem(item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
+					handleItem(&acceptedTunes, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
 				}
 
 				count++
-				if count > offset+limit {
+				if int64(count) > offset+limit {
 					stop = true
 					break
 				}
@@ -229,11 +229,21 @@ func main() {
 	}
 
 	if args.HTMLResults {
+		slices.SortFunc(acceptedTunes, tunesByYear)
+		fmt.Println("<html>")
+		fmt.Println("<body>")
+		fmt.Println("<table border>")
+
+		for i := 0; i < len(acceptedTunes); i++ {
+			simpleHTML(acceptedTunes[i])
+		}
+
 		fmt.Println("</table>")
 		fmt.Println("</body>")
 		fmt.Println("</html>")
 	}
 
+	log.Println(len(acceptedTunes))
 }
 
 var rejectFieldString_ = map[string][]string{
@@ -288,4 +298,14 @@ var idList = []string{
 	"lp_the-scots-guards-on-parade_the-regimental-band-of-the-scots-guards_0",
 	"lp_highland-pipes_pipes-and-drums-of-2nd-battalion-scots",
 	"lp_kilts-on-parade_st-columcilles-united-gaelic-pipe-band",
+}
+
+func tunesByYear(a, b *ia.ItemTopLevelMetadata) int {
+	if b.Metadata.CanonicalYear == 0 && a.Metadata.CanonicalYear == 0 {
+		if a.Metadata.Source == "Vinyl LP" && a.Metadata.Source != "Vinyl LP" {
+			return -2
+		}
+		return cmp.Compare(a.Metadata.Titles[0], b.Metadata.Titles[0])
+	}
+	return cmp.Compare(b.Metadata.CanonicalYear, a.Metadata.CanonicalYear)
 }
