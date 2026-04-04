@@ -21,6 +21,8 @@ func m3uOut(title, url string) *m3u.Record {
 
 }
 
+const OGG = "Ogg Vorbis"
+
 var FileFormats = map[string]struct{}{
 	"128Kbps MP3": struct{}{},
 	"64Kbps MP3":  struct{}{},
@@ -42,7 +44,7 @@ type FileFormat struct {
 	File         *ia.File
 }
 
-func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool, preferredFormats string, uniqueAudioFiles map[string]struct{}) []DownloadAudio {
+func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool, preferredFormats []string, uniqueAudioFiles map[string]struct{}) []DownloadAudio {
 
 	var download []DownloadAudio
 
@@ -58,14 +60,7 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 		creator = item.Metadata.Creators[0] + "(" + year + ") - "
 	}
 
-	var formats []string
-	if preferredFormats != "" {
-		formats = makePreferredFormats(preferredFormats)
-	} else {
-		formats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
-	}
-
-	collectedFiles := make(map[string]*FileFormat)
+	tuneCopies := make(map[string]*FileFormat)
 
 	// basefilename --> format --> File
 	nameFormatFile := make(map[string]map[string]*ia.File)
@@ -83,16 +78,16 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[strin
 				} else {
 					uniqueAudioFiles[file.MD5] = struct{}{}
 				}
-				collectFile(collectedFiles, nameFormatFile, &file)
+				findTuneCopies(tuneCopies, nameFormatFile, &file)
 			}
 		}
 	}
 
-	for _, formatFile := range nameFormatFile {
+	for _, formatFile := range nameFormatFile { // Loop through unique tunes
 		selected := false
-		for format, file := range formatFile {
-			for i := 0; i < len(formats); i++ {
-				if format == formats[i] {
+		for format, file := range formatFile { // Loop through tune's formats available
+			for i := 0; i < len(preferredFormats); i++ {
+				if format == preferredFormats[i] { // If the tune's format is on the preferred list, use it and break out of 2 of 3 loops
 					rec := m3u.NewRecord()
 					// Tune title
 					if len(file.Title) != 0 {
@@ -195,18 +190,18 @@ func isFileFormat(format string) bool {
 	return ok
 }
 
-func collectFile(collectedFiles map[string]*FileFormat, coll map[string]map[string]*ia.File, file *ia.File) {
+func findTuneCopies(tuneCopies map[string]*FileFormat, coll map[string]map[string]*ia.File, file *ia.File) {
 	baseName := makeBaseName(file.Name)
 
 	var ff *FileFormat
 	var ok bool
-	if ff, ok = collectedFiles[baseName]; !ok {
+	if ff, ok = tuneCopies[baseName]; !ok {
 		ff = &FileFormat{
 			BaseFileName: baseName,
 			Formats:      make(map[string]struct{}),
 			File:         file,
 		}
-		collectedFiles[baseName] = ff
+		tuneCopies[baseName] = ff
 	}
 	ff.Formats[file.Format] = struct{}{}
 	///////////////////////

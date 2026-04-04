@@ -218,7 +218,14 @@ func handleItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevel
 
 	var downloadUrls []DownloadAudio
 	if m3uOut || args.VerifyAudioURL {
-		downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio, args.Formats, uniqueAudioFiles)
+		var formats []string
+		if args.Formats != "" {
+			formats = makePreferredFormats(args.Formats)
+		} else {
+			formats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
+		}
+
+		downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio, formats, uniqueAudioFiles)
 	}
 
 	if args.LocalAudio {
@@ -285,7 +292,7 @@ func loadExtraIDs(acceptedTunes *[]*ia.ItemTopLevelMetadata, args *args, loadedI
 	}
 	for i := 0; i < len(ids); i++ {
 
-		if len(ids[i]) == 0 {
+		if len(ids[i]) == 0 || ids[i][0] == '#' {
 			continue
 		}
 		item, err := ia.GetItem(ids[i], loadedIDs, client, itemCache, args.Verbose)
