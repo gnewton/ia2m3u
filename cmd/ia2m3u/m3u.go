@@ -21,18 +21,6 @@ func m3uOut(title, url string) *m3u.Record {
 
 }
 
-const OGG = "Ogg Vorbis"
-
-var FileFormats = map[string]struct{}{
-	"128Kbps MP3": struct{}{},
-	"64Kbps MP3":  struct{}{},
-	"AIFF":        struct{}{},
-	"Flac":        struct{}{},
-	"MP3":         struct{}{},
-	"Ogg Vorbis":  struct{}{},
-	"VBR MP3":     struct{}{},
-}
-
 type DownloadAudio struct {
 	localFilename string
 	remoteUrl     string

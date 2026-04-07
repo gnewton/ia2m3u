@@ -1,21 +1,32 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	ia "github.com/gnewton/iascrape"
-	"log"
 	"net/url"
+	"slices"
 	"strconv"
+	"strings"
 )
 
-func simpleHTML(item *ia.ItemTopLevelMetadata) {
+func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose bool) {
+
+	copies := collectCopies(item.Files)
+
+	wantedCopies := findWantedCopies(copies, wantedFormats)
+
+	slices.SortFunc(wantedCopies, tunesByTrackOrder)
+
 	meta := item.Metadata
+
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("<tr>")
 	//fmt.Println("<td rowspan='", 11, "' valign='top' align='right'>")
-	fmt.Printf("<td rowspan='%d' valign='top' align='right'>\n", countAudioFiles(item.Files)+1)
+	//fmt.Printf("<td rowspan='%d' valign='top' align='right'>\n", countAudioFiles(item.Files)+1)
+	fmt.Printf("<td rowspan='%d' valign='top' align='right'>\n", len(wantedCopies)+1)
 	//fmt.Println("<td valign='top' align='right'>")
 	thumb := "https://" + item.D1 + item.Dir + "/" + Thumb
 
@@ -51,16 +62,19 @@ func simpleHTML(item *ia.ItemTopLevelMetadata) {
 	}
 
 	title, creator := makeTitleCreator(meta.Titles, meta.Creators)
-	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", year, meta.Identifier, title, creator, len(meta.Subjects), meta.Subjects, meta.Identifier)
+	//fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", year, meta.Identifier, title, creator, len(meta.Subjects), meta.Subjects, meta.Identifier)
 
-	fmt.Printf(" <a href=\"https://archive.org/metadata/%s\">JSON</a>\n", meta.Identifier)
+	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s\n", year, meta.Identifier, title, creator)
+
+	if verbose {
+		fmt.Printf(" <a href=\"https://archive.org/metadata/%s\">JSON</a>\n", meta.Identifier)
+	}
 
 	fmt.Println("</td>")
 	fmt.Println("</tr>")
 
 	if len(item.Files) > 0 {
-		log.Println("%%%%%%%%%%%%%%%%%%%%%%% ", meta.Identifier)
-		writeAudioFiles2(item.Files, meta.Identifier)
+		writeAudioFiles(wantedCopies, meta.Identifier, verbose)
 	}
 
 	fmt.Println("<tr>  <td colspan='3'> <hr> </td> </tr>")
@@ -69,33 +83,32 @@ func simpleHTML(item *ia.ItemTopLevelMetadata) {
 	fmt.Println("")
 }
 
-func countAudioFiles(files []ia.File) int {
-	n := 0
-	for i := 0; i < len(files); i++ {
-		f := files[i]
-
-		if _, ok := FileFormats[f.Format]; ok {
-			n++
-			//log.Println("+++++++++++ 567", f.Format)
-		}
-	}
-	return n
+func tunesByTrackOrder(a, b *ia.File) int {
+	return cmp.Compare(a.TrackOrder, b.TrackOrder)
 }
 
-func writeAudioFiles2(files []ia.File, id string) {
+func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 
 	filenameTitle := make(map[string]string)
 	n := 0
-	for i := 0; i < len(files); i++ {
-		f := files[i]
+	for i := 0; i < len(wantedCopies); i++ {
+
+		f := wantedCopies[i]
+		if f == nil {
+			continue
+		}
 		if _, ok := FileFormats[f.Format]; ok {
-			log.Println(f.Format, f.Name, f.Title)
 			n++
 			fmt.Println("")
 			fmt.Println("<tr valign='top'>")
 			fmt.Println("<td width='35%'>")
 			fmt.Printf("%d.\n", n)
-			fmt.Printf("<a href=\"%s\">%s</a> %s", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle), f.Format)
+			fmt.Printf("<a href=\"%s\">%s</a>", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
+			//fmt.Printf("<a href=\"%s\">%s</a> %s", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle), f.Format)
+			if verbose {
+				fmt.Println(f.TrackOrder, f.Format)
+			}
+
 			fmt.Println("</td>")
 
 			fmt.Println("<td>")
@@ -109,8 +122,6 @@ func writeAudioFiles2(files []ia.File, id string) {
 			fmt.Print("'>")
 			fmt.Println("        Your browser does not support the audio element.")
 			fmt.Println("      </audio>")
-			fmt.Println("<br>")
-			fmt.Println("<br>")
 			fmt.Println("</td>")
 			fmt.Println("</tr>")
 
@@ -140,5 +151,76 @@ func makeFileTitle(title, name string, original []string, filenameTitle map[stri
 	}
 
 	return name
+
+}
+
+func findBaseMP3Filenames(files *[]ia.File) []string {
+	var fns []string
+
+	for i := 0; i < len(*files); i++ {
+		f := (*files)[i]
+		if f.Format == VBR_MP3 {
+			name, _ := strings.CutSuffix(f.Name, VBR_MP3_SUFFIX)
+			fns = append(fns, name)
+			continue
+		}
+	}
+	return fns
+}
+
+func collectCopies(files []ia.File) map[string][]*ia.File {
+	nameCopies := make(map[string][]*ia.File)
+
+	for i := 0; i < len(files); i++ {
+		f := files[i]
+		if _, ok := FileFormats[f.Format]; ok {
+			// Assumes JSON ia.File ordering reflects track ordering. Might not be true for all
+			f.TrackOrder = i
+			baseName := makeFileBaseName(f.Name, f.Format)
+
+			var copyFiles []*ia.File
+			var ok bool
+			if copyFiles, ok = nameCopies[baseName]; !ok {
+				copyFiles = []*ia.File{&f}
+
+			} else {
+				copyFiles = append(copyFiles, &f)
+			}
+			nameCopies[baseName] = copyFiles
+		}
+	}
+
+	return nameCopies
+}
+
+func findWantedCopies(copies map[string][]*ia.File, wantedFormats []string) []*ia.File {
+	var wantedCopies []*ia.File
+
+	for _, files := range copies {
+		wantedCopy := findWantedCopy(files, wantedFormats)
+		if wantedCopy != nil {
+			wantedCopies = append(wantedCopies, wantedCopy)
+		}
+	}
+	return wantedCopies
+}
+
+func findWantedCopy(files []*ia.File, wantedFormats []string) *ia.File {
+	for _, format := range wantedFormats {
+		for _, file := range files {
+			if file.Format == format {
+				return file
+			}
+		}
+	}
+	return nil
+}
+
+func makeFileBaseName(s string, format string) string {
+	if ext, ok := FileFormats[format]; ok {
+		return strings.TrimSuffix(s, ext)
+	}
+
+	return s
 
 }

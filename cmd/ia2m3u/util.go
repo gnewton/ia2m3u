@@ -30,7 +30,32 @@ var LPImagesPHP = "/view_archive.php?archive="
 var Thumb = "__ia_thumb.jpg"
 var baseUrl = "https://archive.org/metadata/"
 
-//var uilleanSource = "https://commons.wikimedia.org/wiki/File:UilleannPipes.jpg"
+// var uilleanSource = "https://commons.wikimedia.org/wiki/File:UilleannPipes.jpg"
+const AIFF = "AIFF"
+const FLAC = "Flac"
+
+// const MP3 = "MP3"
+const MP3_128Kbps = "128Kbps MP3"
+const MP3_64Kbps = "64Kbps MP3"
+const OGG = "Ogg Vorbis"
+const VBR_MP3 = "VBR MP3"
+
+const AIFF_SUFFIX = ".aiff"
+const FLAC_SUFFIX = ".flac"
+const MP3_128Kbps_SUFFIX = "_128kb.mp3"
+const MP3_64Kbps_SUFFIX = "_64kb.mp3"
+
+const OGG_SUFFIX = ".ogg"
+const VBR_MP3_SUFFIX = ".mp3"
+
+var FileFormats = map[string]string{
+	MP3_128Kbps: MP3_128Kbps_SUFFIX,
+	MP3_64Kbps:  MP3_64Kbps_SUFFIX,
+	AIFF:        AIFF_SUFFIX,
+	FLAC:        FLAC_SUFFIX,
+	OGG:         OGG_SUFFIX,
+	VBR_MP3:     VBR_MP3_SUFFIX,
+}
 
 func checkArgs(args *args) (bool, error) {
 	m3uOut := true

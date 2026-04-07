@@ -235,7 +235,7 @@ func main() {
 		fmt.Println("<table border>")
 
 		for i := 0; i < len(acceptedTunes); i++ {
-			simpleHTML(acceptedTunes[i])
+			simpleHTML(acceptedTunes[i], makePreferredFormats(args.Formats), args.Verbose)
 		}
 
 		fmt.Println("</table>")
