@@ -19,6 +19,7 @@ import (
 
 type args struct {
 	CacheLoad        bool     `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
+	CacheFile        string   `arg:"-c,--cache-file" help:"Location of item JSON cache file" default:"cache_item.db"`
 	Debug            bool     `arg:"-D" help:"Debug mode"`
 	Dir              string   `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
 	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
@@ -75,7 +76,7 @@ func main() {
 		defer file.Close()
 	}
 
-	itemCache, err := ia.NewCache("cache_item.db")
+	itemCache, err := ia.NewCache(args.CacheFile)
 	if err != nil {
 		log.Fatal(err)
 	}
