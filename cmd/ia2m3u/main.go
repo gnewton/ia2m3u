@@ -65,7 +65,9 @@ func main() {
 		log.Println(err)
 	}
 
-	log.Println(args.Formats)
+	if args.Verbose {
+		log.Println("Wanted formats: ", args.Formats)
+	}
 
 	var file *os.File
 	if m3uOut {
@@ -89,6 +91,8 @@ func main() {
 		}
 
 	}
+
+	log.Println(rejectFields)
 
 	client := ia.NewClient()
 	recMap := make(map[string]*m3u.Record)
@@ -229,14 +233,16 @@ func main() {
 		w.Flush()
 	}
 
+	var totalTunes = 0
+
 	if args.HTMLResults {
 		slices.SortFunc(acceptedTunes, tunesByYear)
 		fmt.Println("<html>")
 		fmt.Println("<body>")
-		fmt.Println("<table border>")
+		fmt.Println("<table  style='border-collapse: collapse;' border cellpadding='5'>")
 
 		for i := 0; i < len(acceptedTunes); i++ {
-			simpleHTML(acceptedTunes[i], makePreferredFormats(args.Formats), args.Verbose)
+			totalTunes += simpleHTML(acceptedTunes[i], makePreferredFormats(args.Formats), args.Verbose)
 		}
 
 		fmt.Println("</table>")
@@ -244,7 +250,10 @@ func main() {
 		fmt.Println("</html>")
 	}
 
-	log.Println(len(acceptedTunes))
+	if args.Verbose {
+		log.Println("Total items:", len(acceptedTunes))
+		log.Println("Total tunes:", totalTunes)
+	}
 }
 
 var rejectFieldString_ = map[string][]string{

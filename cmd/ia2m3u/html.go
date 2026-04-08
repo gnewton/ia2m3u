@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose bool) {
+func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose bool) int {
 
 	copies := collectCopies(item.Files)
 
@@ -23,11 +23,10 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose b
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("")
-	fmt.Println("<tr>")
-	//fmt.Println("<td rowspan='", 11, "' valign='top' align='right'>")
-	//fmt.Printf("<td rowspan='%d' valign='top' align='right'>\n", countAudioFiles(item.Files)+1)
-	fmt.Printf("<td rowspan='%d' valign='top' align='right'>\n", len(wantedCopies)+1)
-	//fmt.Println("<td valign='top' align='right'>")
+	fmt.Println("<tr bgcolor='eeeeee'>")
+
+	fmt.Printf("<td rowspan='%d' valign='top' align='right' width='5%%'>\n", len(wantedCopies)+1)
+
 	thumb := "https://" + item.D1 + item.Dir + "/" + Thumb
 
 	if has, jp2f := hasJP2ZipFile(item.Files, item.Metadata.Identifier); !has {
@@ -43,16 +42,16 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose b
 
 		// LP BACK cover image
 		jp2ImageUrl := makeJP2ImageUrl(jp2f, item, "1")
-		fmt.Print("<br><br>  &emsp; ")
 		fmt.Println("<a href=\"" + jp2ImageUrl + "\">")
 		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + jp2ImageUrl + "'>")
 		fmt.Println("</a>")
 	}
 	fmt.Println("</td>")
 
+	// COLUMN
 	fmt.Println("")
-	fmt.Println("<td valign='top' colspan='2'>")
-	fmt.Println("<b>")
+	fmt.Println("<td valign='top' colspan='3'  bgcolor='eeeeee'>")
+	fmt.Println("<h2>")
 
 	var year string
 	if meta.CanonicalYear == 0 {
@@ -62,14 +61,15 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose b
 	}
 
 	title, creator := makeTitleCreator(meta.Titles, meta.Creators)
-	//fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s - %d - %s --- %s\n", year, meta.Identifier, title, creator, len(meta.Subjects), meta.Subjects, meta.Identifier)
 
-	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a> - %s\n", year, meta.Identifier, title, creator)
+	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a>\n", year, meta.Identifier, title)
+	fmt.Printf(" - <i>%s</i>\n", creator)
 
 	if verbose {
 		fmt.Printf(" <a href=\"https://archive.org/metadata/%s\">JSON</a>\n", meta.Identifier)
+		fmt.Println(meta.Collections)
 	}
-
+	fmt.Println("</h2>")
 	fmt.Println("</td>")
 	fmt.Println("</tr>")
 
@@ -77,10 +77,12 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose b
 		writeAudioFiles(wantedCopies, meta.Identifier, verbose)
 	}
 
-	fmt.Println("<tr>  <td colspan='3'> <hr> </td> </tr>")
+	fmt.Println("<tr   bgcolor='eeeeee'>  <td colspan='4'> <hr> </td> </tr>")
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("")
+
+	return len(wantedCopies)
 }
 
 func tunesByTrackOrder(a, b *ia.File) int {
@@ -98,22 +100,40 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 			continue
 		}
 		if _, ok := FileFormats[f.Format]; ok {
+			// ROW
 			n++
 			fmt.Println("")
 			fmt.Println("<tr valign='top'>")
-			fmt.Println("<td width='35%'>")
-			fmt.Printf("%d.\n", n)
-			fmt.Printf("<a href=\"%s\">%s</a>", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
-			//fmt.Printf("<a href=\"%s\">%s</a> %s", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle), f.Format)
-			if verbose {
-				fmt.Println(f.TrackOrder, f.Format)
-			}
 
+			// COLUMN Track#
+			if i%2 == 0 {
+				fmt.Println("<td  width='2%'  valign='top' align='right'>")
+			} else {
+				fmt.Println("<td width='2%' bgcolor='eeeeee' valign='top'  align='right'>")
+			}
+			fmt.Printf("%d.  &nbsp; \n", n)
 			fmt.Println("</td>")
 
-			fmt.Println("<td>")
-			// fmt.Println("<br>")
-			fmt.Println("<p>")
+			// COLUMN tune title
+			if i%2 == 0 {
+				fmt.Println("<td width='30%'  valign='top'>")
+			} else {
+				fmt.Println("<td width='30%' bgcolor='eeeeee'  valign='top'>")
+			}
+			//fmt.Printf("<a href=\"%s\">%s</a>", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
+			fmt.Printf("%s", makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
+			if verbose {
+				//fmt.Println(f.TrackOrder, f.Format)
+			}
+			fmt.Println("</td>")
+
+			// COLUMN - Audio Player
+			if i%2 == 0 {
+				fmt.Println("<td  valign='top'>")
+			} else {
+				fmt.Println("<td bgcolor='eeeeee'  valign='top'>")
+			}
+
 			fmt.Println("      <audio controls>")
 			//fmt.Print("        <source preload='none' src=\"")
 			fmt.Print("        <source src=\"")
@@ -223,4 +243,8 @@ func makeFileBaseName(s string, format string) string {
 
 	return s
 
+}
+
+func comment(s string) {
+	fmt.Printf("<!-- %s -->\n", s)
 }
