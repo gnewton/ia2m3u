@@ -303,9 +303,9 @@ var idList = []string{
 
 func tunesByYear(a, b *ia.ItemTopLevelMetadata) int {
 	if b.Metadata.CanonicalYear == 0 && a.Metadata.CanonicalYear == 0 {
-		if a.Metadata.Source == "Vinyl LP" && a.Metadata.Source != "Vinyl LP" {
-			return -2
-		}
+		//if a.Metadata.Source == "Vinyl LP" && a.Metadata.Source != "Vinyl LP" {
+		//			return -2
+		//}
 		return cmp.Compare(a.Metadata.Titles[0], b.Metadata.Titles[0])
 	}
 	return cmp.Compare(b.Metadata.CanonicalYear, a.Metadata.CanonicalYear)

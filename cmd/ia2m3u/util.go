@@ -213,13 +213,19 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 }
 
 func handleItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
+
 	if len(item.Metadata.Identifier) == 0 {
 		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
 		return nil
 	}
 	if args.Verbose {
-		log.Println("HandleItem: Getting metadata record: ", item.Metadata.Identifier)
+		//log.Println("HandleItem: Getting metadata record: ", item.Metadata.Identifier)
 	}
+
+	if count % 1000 == 0{
+		log.Println("HandleItem:", count, "-", item.Metadata.Identifier)
+	}
+	
 
 	if rejectByField(&item.Metadata, rejectFields, args.Verbose) {
 		if args.Verbose {
@@ -279,7 +285,6 @@ func handleItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevel
 
 func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string, verbose bool) bool {
 	if rejectFields == nil { // Don't rejectcompile
-		log.Println("$$$$$$$$$$NO REJECT POSSIBLE$$$$$$$$$$$$$$$$$$$$$$")
 		return false
 	}
 	mm := ia.MakeMetadataItemFieldMap(item)
@@ -289,7 +294,7 @@ func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string, verb
 			for i := 0; i < len(rejectValues); i++ {
 				if slices.Contains(*field, rejectValues[i]) {
 					if verbose {
-						log.Println("----------------- REJECTED", *field, " == ", rejectValues[i])
+						//log.Println("----------------- REJECTED", *field, " == ", rejectValues[i])
 					}
 					return true
 				}
