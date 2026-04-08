@@ -92,8 +92,6 @@ func main() {
 
 	}
 
-	log.Println(rejectFields)
-
 	client := ia.NewClient()
 	recMap := make(map[string]*m3u.Record)
 	var m3 *m3u.M3U
@@ -239,7 +237,7 @@ func main() {
 		slices.SortFunc(acceptedTunes, tunesByYear)
 		fmt.Println("<html>")
 		fmt.Println("<body>")
-		fmt.Println("<table  style='border-collapse: collapse;' border cellpadding='5'>")
+		fmt.Println("<table  style='border-collapse: collapse;' cellpadding='5'>")
 
 		for i := 0; i < len(acceptedTunes); i++ {
 			totalTunes += simpleHTML(acceptedTunes[i], makePreferredFormats(args.Formats), args.Verbose)

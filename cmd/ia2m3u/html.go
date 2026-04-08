@@ -99,19 +99,27 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 		if f == nil {
 			continue
 		}
-		if _, ok := FileFormats[f.Format]; ok {
+		if _, ok := FileFormats[f.Format]; ok { // REDUNDEDNT; REMOVE; FIXXX
 			// ROW
 			n++
 			fmt.Println("")
 			fmt.Println("<tr valign='top'>")
 
 			// COLUMN Track#
+
 			if i%2 == 0 {
 				fmt.Println("<td  width='2%'  valign='top' align='right'>")
 			} else {
-				fmt.Println("<td width='2%' bgcolor='eeeeee' valign='top'  align='right'>")
+				fmt.Println("<td width='2%' bgcolor='eeeeee' valign='top'  align='right' >")
 			}
-			fmt.Printf("%d.  &nbsp; \n", n)
+
+			if len(wantedCopies) > 1 {
+				fmt.Printf("%d.  &nbsp; \n", n)
+			}
+			if len(wantedCopies) == 1 {
+				fmt.Printf("%s\n", f.MD5[len(f.MD5)-4:])
+			}
+
 			fmt.Println("</td>")
 
 			// COLUMN tune title
@@ -121,7 +129,8 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 				fmt.Println("<td width='30%' bgcolor='eeeeee'  valign='top'>")
 			}
 			//fmt.Printf("<a href=\"%s\">%s</a>", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
-			fmt.Printf("%s", makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
+			fmt.Printf("%s\n", makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
+
 			if verbose {
 				//fmt.Println(f.TrackOrder, f.Format)
 			}
@@ -142,6 +151,7 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 			fmt.Print("'>")
 			fmt.Println("        Your browser does not support the audio element.")
 			fmt.Println("      </audio>")
+
 			fmt.Println("</td>")
 			fmt.Println("</tr>")
 

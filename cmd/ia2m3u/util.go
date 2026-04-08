@@ -289,10 +289,9 @@ func rejectByField(item *ia.ItemMetadata, rejectFields map[string][]string, verb
 	mm := ia.MakeMetadataItemFieldMap(item)
 
 	for fieldname, field := range mm {
-		log.Println(fieldname, field)
+
 		if rejectValues, ok := rejectFields[fieldname]; ok {
 			for i := 0; i < len(rejectValues); i++ {
-				log.Println(*field, " --- ", rejectValues[i])
 				if slices.Contains(*field, rejectValues[i]) {
 					if verbose {
 						log.Println("----------------- REJECTED", *field, " == ", rejectValues[i])
