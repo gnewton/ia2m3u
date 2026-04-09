@@ -216,6 +216,7 @@ func handleItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevel
 
 	if len(item.Metadata.Identifier) == 0 {
 		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
+		log.Println(item)
 		return nil
 	}
 	if args.Verbose {

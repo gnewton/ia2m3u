@@ -196,6 +196,12 @@ func main() {
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
 					item, err := ia.GetItem(results[i].Identifier, loadedIDs, client, itemCache, args.Verbose)
+					if len(item.Metadata.Identifier) == 0{
+						log.Println("Missing identifier for results id=", results[i].Identifier)
+						log.Println(item)
+						continue
+					}
+							
 					if err != nil {
 						log.Fatal(err)
 					}
