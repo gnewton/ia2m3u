@@ -117,9 +117,6 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 			if len(wantedCopies) > 1 {
 				fmt.Printf("%d.  &nbsp; \n", n)
 			}
-			if len(wantedCopies) == 1 {
-				fmt.Printf("%s\n", f.MD5[len(f.MD5)-4:])
-			}
 
 			fmt.Println("</td>")
 
@@ -152,6 +149,10 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 			fmt.Print("'>")
 			fmt.Println("        Your browser does not support the audio element.")
 			fmt.Println("      </audio>")
+
+			if len(wantedCopies) == 1 {
+				fmt.Printf("&nbsp; %s\n", f.MD5[len(f.MD5)-4:])
+			}
 
 			fmt.Println("</td>")
 			fmt.Println("</tr>")

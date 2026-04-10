@@ -187,8 +187,6 @@ func main() {
 
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
-					log.Println(i, "--------------------------------------------")
-
 					id := results[i].Identifier
 					// Alreaded loaded in this session
 					if _, ok := loadedIDs[id]; ok {
@@ -203,7 +201,7 @@ func main() {
 						log.Fatal(i)
 					}
 					loadedIDs[id] = struct{}{}
-					log.Println(item.Metadata.Identifier)
+
 					if len(item.Metadata.Identifier) == 0 {
 						log.Println("Missing identifier for results id=", id)
 						log.Println(item)
@@ -227,23 +225,6 @@ func main() {
 			}
 		}
 	}
-
-	// if m3uOut {
-
-	// 	if args.Random {
-	// 		randomizeAudio(m3, recMap)
-	// 	}
-	// 	if args.Verbose {
-	// 		log.Println("Writing m3u file:", args.M3UFile)
-	// 		log.Println("  # Entries:", len(recMap))
-	// 	}
-	// 	w := bufio.NewWriter(file)
-
-	// 	if err := m3.Write(w); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	w.Flush()
-	// }
 
 	var totalTunes = 0
 	var wantedFormats []string
@@ -360,6 +341,10 @@ func tunesByYear(a, b *ia.ItemTopLevelMetadata) int {
 		//if a.Metadata.Source == "Vinyl LP" && a.Metadata.Source != "Vinyl LP" {
 		//			return -2
 		//}
+		return cmp.Compare(a.Metadata.Titles[0], b.Metadata.Titles[0])
+	}
+
+	if b.Metadata.CanonicalYear == a.Metadata.CanonicalYear {
 		return cmp.Compare(a.Metadata.Titles[0], b.Metadata.Titles[0])
 	}
 	return cmp.Compare(b.Metadata.CanonicalYear, a.Metadata.CanonicalYear)
