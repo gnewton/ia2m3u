@@ -5,18 +5,14 @@ import (
 	"fmt"
 	ia "github.com/gnewton/iascrape"
 	"net/url"
-	"slices"
+	//`"slices"
 	"strconv"
 	"strings"
 )
 
-func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose bool) int {
+var CREATOR_SEARCH_PREFIX = "https://archive.org/search?query=creator%3A%22"
 
-	copies := collectCopies(item.Files)
-
-	wantedCopies := findWantedCopies(copies, wantedFormats)
-
-	slices.SortFunc(wantedCopies, tunesByTrackOrder)
+func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose bool) int {
 
 	meta := item.Metadata
 
@@ -31,7 +27,7 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose b
 
 	if has, jp2f := hasJP2ZipFile(item.Files, item.Metadata.Identifier); !has {
 		// LP FRONT cover image
-		fmt.Println("<a href=\"https://" + item.D1 + item.Dir + "/" + item.Metadata.Identifier + "_itemimage.jpg\">")
+		fmt.Println("<a href=\"https://" + item.D1 + item.Dir + "/" + meta.Identifier + "_itemimage.jpg\">")
 		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
 		fmt.Println("</a>")
 	} else {
@@ -63,7 +59,12 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedFormats []string, verbose b
 	title, creator := makeTitleCreator(meta.Titles, meta.Creators)
 
 	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a>\n", year, meta.Identifier, title)
-	fmt.Printf(" - <i>%s</i>\n", creator)
+
+	if creator != "?" {
+		fmt.Printf(" - <i><a href=\"%s\">%s</a></i>\n", CREATOR_SEARCH_PREFIX+creator+"%22", creator)
+	} else {
+		fmt.Printf(" - <i>%s</i>\n", creator)
+	}
 
 	if verbose {
 		fmt.Printf(" <a href=\"https://archive.org/metadata/%s\">JSON</a>\n", meta.Identifier)
@@ -124,9 +125,9 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 
 			// COLUMN tune title
 			if i%2 == 0 {
-				fmt.Println("<td width='30%'  valign='top'>")
+				fmt.Println("<td width='35%'  valign='top'>")
 			} else {
-				fmt.Println("<td width='30%' bgcolor='eeeeee'  valign='top'>")
+				fmt.Println("<td width='35%' bgcolor='eeeeee'  valign='top'>")
 			}
 			//fmt.Printf("<a href=\"%s\">%s</a>", makeRemoteAudioURL(id, f.Name), makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))
 			fmt.Printf("%s\n", makeFileTitle(f.Title, f.Name, f.Original, filenameTitle))

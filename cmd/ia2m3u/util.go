@@ -212,7 +212,7 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func handleItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
+func processItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
 
 	if len(item.Metadata.Identifier) == 0 {
 		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
@@ -249,6 +249,7 @@ func handleItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevel
 
 	var downloadUrls []DownloadAudio
 	if m3uOut || args.VerifyAudioURL {
+		//FIXXX
 		var formats []string
 		if args.Formats != "" {
 			formats = makePreferredFormats(args.Formats)
@@ -316,17 +317,22 @@ func loadIncludeIDs(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func loadExtraIDs(acceptedTunes *[]*ia.ItemTopLevelMetadata, args *args, loadedIDs map[string]struct{}, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
+func loadExtraIDs(acceptedTunes *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
 	}
 	for i := 0; i < len(ids); i++ {
-
-		if len(ids[i]) == 0 || ids[i][0] == '#' {
+		id := ids[i]
+		if len(id) == 0 || id[0] == '#' {
 			continue
 		}
-		item, err := ia.GetItem(ids[i], loadedIDs, client, itemCache, args.Verbose)
+
+		if _, ok := loadedIDs[id]; ok {
+			continue
+		}
+
+		item, err := ia.GetItem(ids[i], client, itemCache, args.Verbose)
 		if err != nil {
 			return err
 		}
@@ -334,8 +340,9 @@ func loadExtraIDs(acceptedTunes *[]*ia.ItemTopLevelMetadata, args *args, loadedI
 		if item == nil {
 			continue
 		}
+		loadedIDs[id] = struct{}{}
 
-		err = handleItem(acceptedTunes, item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
+		err = processItem(acceptedTunes, item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
 
 		if err != nil {
 			return err
@@ -357,9 +364,6 @@ func hasJP2ZipFile(files []ia.File, identifier string) (bool, string) {
 
 // d1 + LPImagesPHP + jp2-zip-FileName + "&file=" + jp2-zip-FileName_no_zip_suffix + "%2F" + identifier + "-band_0001.jp2&ext=jpg"
 func makeJP2ImageUrl(filename string, tm *ia.ItemTopLevelMetadata, fileNumber string) string {
-
-	//return "https://" + tm.D1 + LPImagesPHP + tm.Metadata.Identifier + "/" + filename + "&file=" + filename[0:len(filename)-4] + "%2F" + tm.Metadata.Identifier + "_0001.jp2&ext=jpg"
-
 	return "https://" + tm.D1 + LPImagesPHP + tm.Dir + "/" + filename + "&file=" + filename[0:len(filename)-4] + "%2F" + tm.Metadata.Identifier + "_000" + fileNumber + ".jp2&ext=jpg"
 }
 

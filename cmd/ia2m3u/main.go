@@ -9,7 +9,6 @@ import (
 	m3u "github.com/k3a/go-m3u"
 	"log"
 	"math"
-	"regexp"
 	"slices"
 	"strconv"
 	//"net/url"
@@ -39,12 +38,6 @@ type args struct {
 	Verbose          bool     `arg:"-v" help:"Verbose output"`
 	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
 	Years            []int    `arg:"-y" help:"Limit by year range. Two year values, start end (inclusive). i.e. -y 1980 1990"`
-}
-
-var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9-]+`)
-
-func clearString(str string) string {
-	return nonAlphanumericRegex.ReplaceAllString(str, "_")
 }
 
 func main() {
@@ -113,7 +106,7 @@ func main() {
 	loadedIDs := make(map[string]struct{})
 
 	if args.IncludeIDFile != "" {
-		err := loadExtraIDs(&acceptedTunes, &args, loadedIDs, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
+		err := loadExtraIDs(&acceptedTunes, loadedIDs, &args, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -150,7 +143,6 @@ func main() {
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
 
 	for _, query := range args.Queries {
-		//query = "q=" + url.PathEscape(query) + "&" + url.QueryEscape(sort)
 		query = "q=" + escapeQuery(query)
 		search := ia.Search{
 			Query:      query,
@@ -197,20 +189,36 @@ func main() {
 
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
-					item, err := ia.GetItem(results[i].Identifier, loadedIDs, client, itemCache, args.Verbose)
-					if len(item.Metadata.Identifier) == 0{
-						log.Println("Missing identifier for results id=", results[i].Identifier)
+					log.Println(i, "--------------------------------------------")
+
+					id := results[i].Identifier
+					// Alreaded loaded in this session
+					if _, ok := loadedIDs[id]; ok {
+						continue
+					}
+
+					item, err := ia.GetItem(id, client, itemCache, args.Verbose)
+					if err != nil {
+						log.Println(err)
+					}
+					if item == nil {
+						log.Fatal(i)
+					}
+					loadedIDs[id] = struct{}{}
+					log.Println(item.Metadata.Identifier)
+					if len(item.Metadata.Identifier) == 0 {
+						log.Println("Missing identifier for results id=", id)
 						log.Println(item)
 						continue
 					}
-							
+
 					if err != nil {
 						log.Fatal(err)
 					}
 					if item == nil {
 						continue
 					}
-					handleItem(&acceptedTunes, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
+					processItem(&acceptedTunes, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
 				}
 
 				count++
@@ -222,6 +230,7 @@ func main() {
 		}
 	}
 	if m3uOut {
+
 		if args.Random {
 			randomizeAudio(m3, recMap)
 		}
@@ -238,15 +247,25 @@ func main() {
 	}
 
 	var totalTunes = 0
+	var wantedFormats []string
+	if args.Formats != "" {
+		wantedFormats = makePreferredFormats(args.Formats)
+	} else {
+		wantedFormats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
+	}
 
 	if args.HTMLResults {
-		slices.SortFunc(acceptedTunes, tunesByYear)
+		slices.SortFunc(acceptedTunes, tunesByYear) // Order by year
 		fmt.Println("<html>")
 		fmt.Println("<body>")
 		fmt.Println("<table  style='border-collapse: collapse;' cellpadding='5'>")
 
 		for i := 0; i < len(acceptedTunes); i++ {
-			totalTunes += simpleHTML(acceptedTunes[i], makePreferredFormats(args.Formats), args.Verbose)
+			copies := collectCopies(acceptedTunes[i].Files)
+			wantedCopies := findWantedCopies(copies, wantedFormats)
+			slices.SortFunc(wantedCopies, tunesByTrackOrder)
+			//totalTunes += simpleHTML(acceptedTunes[i], makePreferredFormats(args.Formats), args.Verbose)
+			totalTunes += simpleHTML(acceptedTunes[i], wantedCopies, args.Verbose)
 		}
 
 		fmt.Println("</table>")
