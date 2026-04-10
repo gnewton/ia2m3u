@@ -185,8 +185,6 @@ func main() {
 				break
 			}
 
-			//var item *ia.ItemTopLevelMetadata
-
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
 					log.Println(i, "--------------------------------------------")
@@ -252,6 +250,24 @@ func main() {
 		wantedFormats = makePreferredFormats(args.Formats)
 	} else {
 		wantedFormats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
+	}
+
+	if m3uOut {
+		slices.SortFunc(acceptedTunes, tunesByYear) // Order by year
+		for i := 0; i < len(acceptedTunes); i++ {
+			item := acceptedTunes[i]
+			copies := collectCopies(item.Files)
+			wantedCopies := findWantedCopies(copies, wantedFormats)
+			slices.SortFunc(wantedCopies, tunesByTrackOrder) // []*ia.File
+			_ = makeM3UEntries(item, wantedCopies, m3, recMap, false, false)
+
+		}
+		w := bufio.NewWriter(file)
+
+		if err := m3.Write(w); err != nil {
+			log.Fatal(err)
+		}
+		w.Flush()
 	}
 
 	if args.HTMLResults {

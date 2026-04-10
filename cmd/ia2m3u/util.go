@@ -247,32 +247,32 @@ func processItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLeve
 		return nil
 	}
 
-	var downloadUrls []DownloadAudio
-	if m3uOut || args.VerifyAudioURL {
-		//FIXXX
-		var formats []string
-		if args.Formats != "" {
-			formats = makePreferredFormats(args.Formats)
-		} else {
-			formats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
-		}
+	// var downloadUrls []DownloadAudio
+	// if m3uOut || args.VerifyAudioURL {
+	// 	//FIXXX
+	// 	var formats []string
+	// 	if args.Formats != "" {
+	// 		formats = makePreferredFormats(args.Formats)
+	// 	} else {
+	// 		formats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
+	// 	}
 
-		downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio, formats, uniqueAudioFiles)
-	}
+	// 	downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio, formats, uniqueAudioFiles)
+	// }
 
 	if args.LocalAudio {
-		downloadAudio(downloadUrls, args.Verbose)
+		//downloadAudio(downloadUrls, args.Verbose)
 	}
 
-	if args.VerifyAudioURL {
-		log.Println("******************************************", len(downloadUrls))
-		for _, url := range downloadUrls {
-			err := verifyAudio(client, url.remoteUrl, args.Verbose)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	// if args.VerifyAudioURL {
+	// 	log.Println("******************************************", len(downloadUrls))
+	// 	for _, url := range downloadUrls {
+	// 		err := verifyAudio(client, url.remoteUrl, args.Verbose)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
 	if args.CacheLoad {
 		// Do nothing
 	}
