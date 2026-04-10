@@ -227,22 +227,23 @@ func main() {
 			}
 		}
 	}
-	if m3uOut {
 
-		if args.Random {
-			randomizeAudio(m3, recMap)
-		}
-		if args.Verbose {
-			log.Println("Writing m3u file:", args.M3UFile)
-			log.Println("  # Entries:", len(recMap))
-		}
-		w := bufio.NewWriter(file)
+	// if m3uOut {
 
-		if err := m3.Write(w); err != nil {
-			log.Fatal(err)
-		}
-		w.Flush()
-	}
+	// 	if args.Random {
+	// 		randomizeAudio(m3, recMap)
+	// 	}
+	// 	if args.Verbose {
+	// 		log.Println("Writing m3u file:", args.M3UFile)
+	// 		log.Println("  # Entries:", len(recMap))
+	// 	}
+	// 	w := bufio.NewWriter(file)
+
+	// 	if err := m3.Write(w); err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	w.Flush()
+	// }
 
 	var totalTunes = 0
 	var wantedFormats []string
@@ -251,6 +252,7 @@ func main() {
 	} else {
 		wantedFormats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
 	}
+	var dlAudio []DownloadAudio
 
 	if m3uOut {
 		slices.SortFunc(acceptedTunes, tunesByYear) // Order by year
@@ -259,7 +261,7 @@ func main() {
 			copies := collectCopies(item.Files)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder) // []*ia.File
-			_ = makeM3UEntries(item, wantedCopies, m3, recMap, false, false)
+			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, m3, recMap, args.Random, args.LocalAudio)...)
 
 		}
 		w := bufio.NewWriter(file)
@@ -268,6 +270,10 @@ func main() {
 			log.Fatal(err)
 		}
 		w.Flush()
+
+		if args.LocalAudio {
+			downloadAudio(dlAudio, args.Verbose)
+		}
 	}
 
 	if args.HTMLResults {
