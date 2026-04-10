@@ -27,18 +27,18 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 
 	if has, jp2f := hasJP2ZipFile(item.Files, item.Metadata.Identifier); !has {
 		// LP FRONT cover image
-		fmt.Println("<a href=\"https://" + item.D1 + item.Dir + "/" + meta.Identifier + "_itemimage.jpg\">")
+		fmt.Println("<a  href=\"https://" + item.D1 + item.Dir + "/" + meta.Identifier + "_itemimage.jpg\">")
 		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
 		fmt.Println("</a>")
 	} else {
 		// LP FRONT cover image
-		fmt.Println("<a href=\"" + makeJP2ImageUrl(jp2f, item, "0") + "\">")
+		fmt.Println("<a title='High resolution front cover' href=\"" + makeJP2ImageUrl(jp2f, item, "0") + "\">")
 		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
 		fmt.Println("</a>")
 
 		// LP BACK cover image
 		jp2ImageUrl := makeJP2ImageUrl(jp2f, item, "1")
-		fmt.Println("<a href=\"" + jp2ImageUrl + "\">")
+		fmt.Println("<a title='High resolution back cover' href=\"" + jp2ImageUrl + "\">")
 		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + jp2ImageUrl + "'>")
 		fmt.Println("</a>")
 	}
@@ -58,10 +58,10 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 
 	title, creator := makeTitleCreator(meta.Titles, meta.Creators)
 
-	fmt.Printf("%s <a href=\"https://archive.org/details/%s\">%s</a>\n", year, meta.Identifier, title)
+	fmt.Printf("%s <a title='Details at archive.org' href=\"https://archive.org/details/%s\">%s</a>\n", year, meta.Identifier, title)
 
 	if creator != "?" {
-		fmt.Printf(" - <i><a href=\"%s\">%s</a></i>\n", CREATOR_SEARCH_PREFIX+creator+"%22", creator)
+		fmt.Printf(" - <i><a title='Search for artist at archive.org' href=\"%s\">%s</a></i>\n", CREATOR_SEARCH_PREFIX+creator+"%22", creator)
 	} else {
 		fmt.Printf(" - <i>%s</i>\n", creator)
 	}
