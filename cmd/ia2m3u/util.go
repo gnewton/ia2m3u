@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -35,6 +36,7 @@ const AIFF = "AIFF"
 const FLAC = "Flac"
 
 // const MP3 = "MP3"
+const MPEG_4 = "MPEG-4 Audio"
 const MP3_128Kbps = "128Kbps MP3"
 const MP3_64Kbps = "64Kbps MP3"
 const OGG = "Ogg Vorbis"
@@ -44,9 +46,9 @@ const AIFF_SUFFIX = ".aiff"
 const FLAC_SUFFIX = ".flac"
 const MP3_128Kbps_SUFFIX = "_128kb.mp3"
 const MP3_64Kbps_SUFFIX = "_64kb.mp3"
-
 const OGG_SUFFIX = ".ogg"
-const VBR_MP3_SUFFIX = ".mp3"
+const VBR_MP3_SUFFIX = "_vbr.mp3"
+const MPEG_4_SUFFIX = ".m4a"
 
 var FileFormats = map[string]string{
 	MP3_128Kbps: MP3_128Kbps_SUFFIX,
@@ -55,6 +57,23 @@ var FileFormats = map[string]string{
 	FLAC:        FLAC_SUFFIX,
 	OGG:         OGG_SUFFIX,
 	VBR_MP3:     VBR_MP3_SUFFIX,
+	MPEG_4:      MPEG_4_SUFFIX,
+}
+
+// AND -subject:(Non-Music) AND -subject:(\"Spoken Word\") AND -subject:(\"Monolog\")  AND -subject:(\"Novelty\") AND -subject:(\"Comedy\") AND -collection:(\"audio_religion\") AND -subject:(\"sample\") AND -subject:(\"interviews\")
+var musicFilter map[string][]string = map[string][]string{
+	"subject": []string{
+		"Non-Music",
+		"Spoken Word",
+		"Monolog",
+		"Novelty",
+		"Comedy",
+		"sample",
+		"interviews",
+	},
+	"collection": []string{
+		"audio_religion",
+	},
 }
 
 func checkArgs(args *args) (bool, error) {
@@ -212,7 +231,7 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func processItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
+func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
 
 	if len(item.Metadata.Identifier) == 0 {
 		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
@@ -234,7 +253,7 @@ func processItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLeve
 		return nil
 	}
 
-	*acceptedTunes = append(*acceptedTunes, item)
+	*acceptedItems = append(*acceptedItems, item)
 
 	if args.HTMLResults {
 
@@ -245,36 +264,6 @@ func processItem(acceptedTunes *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLeve
 	if args.TxtResults {
 		outputResults(count, &item.Metadata)
 		return nil
-	}
-
-	// var downloadUrls []DownloadAudio
-	// if m3uOut || args.VerifyAudioURL {
-	// 	//FIXXX
-	// 	var formats []string
-	// 	if args.Formats != "" {
-	// 		formats = makePreferredFormats(args.Formats)
-	// 	} else {
-	// 		formats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
-	// 	}
-
-	// 	downloadUrls = makeM3UEntries(item, m3, recMap, args.Random, args.LocalAudio, formats, uniqueAudioFiles)
-	// }
-
-	if args.LocalAudio {
-		//downloadAudio(downloadUrls, args.Verbose)
-	}
-
-	// if args.VerifyAudioURL {
-	// 	log.Println("******************************************", len(downloadUrls))
-	// 	for _, url := range downloadUrls {
-	// 		err := verifyAudio(client, url.remoteUrl, args.Verbose)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-	if args.CacheLoad {
-		// Do nothing
 	}
 
 	if args.Debug {
@@ -317,7 +306,37 @@ func loadIncludeIDs(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func loadExtraIDs(acceptedTunes *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
+func loadIDYear(filename string) map[string]int {
+	idYear := make(map[string]int)
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Println("Error: loadIDYear loading file", filename)
+		log.Fatal(err)
+	}
+	lines := strings.Split(string(data), "\n")
+
+	for i := 0; i < len(lines); i++ {
+		if lines[i] == "" {
+			break
+		}
+		parts := strings.Split(lines[i], " ")
+		if len(parts) < 2 {
+			log.Println(parts)
+			log.Fatal("Error loading IDYear file:", filename, " Line:", i, ":", lines[i])
+		}
+		year, err := strconv.Atoi(parts[1])
+		if err != nil {
+			log.Fatal("Error loading IDYear file:", filename, " Line:", i, ":", lines[i])
+		}
+		id := parts[0]
+		idYear[id] = year
+	}
+
+	return idYear
+}
+
+func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
@@ -342,7 +361,7 @@ func loadExtraIDs(acceptedTunes *[]*ia.ItemTopLevelMetadata, loadedIDs map[strin
 		}
 		loadedIDs[id] = struct{}{}
 
-		err = processItem(acceptedTunes, item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
+		err = processItem(acceptedItems, item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
 
 		if err != nil {
 			return err
@@ -373,4 +392,15 @@ func getFlacOpusURLs(id string) (string, string, string, string) {
 		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side1.opus",
 		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side2.opus"
 
+}
+
+// Replace unknown year with info from -Y file
+func adjustYears(idYear map[string]int, acceptedItems *[]*ia.ItemTopLevelMetadata) {
+	for i := 0; i < len(*acceptedItems); i++ {
+		item := (*acceptedItems)[i]
+		id := item.Metadata.Identifier
+		if year, ok := idYear[id]; ok {
+			item.Metadata.CanonicalYear = year
+		}
+	}
 }

@@ -32,90 +32,6 @@ type FileFormat struct {
 	File         *ia.File
 }
 
-// func makeM3UEntries(item *ia.ItemTopLevelMetadata, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool, preferredFormats []string, uniqueAudioFiles map[string]struct{}) []DownloadAudio {
-
-// 	var download []DownloadAudio
-
-// 	year := strconv.Itoa(item.Metadata.CanonicalYear)
-
-// 	title := ""
-// 	if len(item.Metadata.Titles) > 0 {
-// 		title = "(" + item.Metadata.Titles[0] + ")"
-// 	}
-
-// 	creator := ""
-// 	if len(item.Metadata.Creators) > 0 {
-// 		creator = item.Metadata.Creators[0] + "(" + year + ") - "
-// 	}
-
-// 	tuneCopies := make(map[string]*FileFormat)
-
-// 	// basefilename --> format --> File
-// 	nameFormatFile := make(map[string]map[string]*ia.File)
-
-// 	/////////////////////
-
-// 	count := 0
-// 	if len(item.Files) > 0 {
-// 		//log.Println(title, item.Metadata.Identifier)
-// 		for _, file := range item.Files {
-// 			// Flac, WAVE, Ogg Vorbis,
-// 			if isFileFormat(file.Format) {
-// 				if _, ok := uniqueAudioFiles[file.MD5]; ok {
-// 					continue
-// 				} else {
-// 					uniqueAudioFiles[file.MD5] = struct{}{}
-// 				}
-// 				findTuneCopies(tuneCopies, nameFormatFile, &file)
-// 			}
-// 		}
-// 	}
-
-// 	for _, formatFile := range nameFormatFile { // Loop through unique tunes
-// 		selected := false
-// 		for format, file := range formatFile { // Loop through tune's formats available
-// 			for i := 0; i < len(preferredFormats); i++ {
-// 				if format == preferredFormats[i] { // If the tune's format is on the preferred list, use it and break out of 2 of 3 loops
-// 					rec := m3u.NewRecord()
-// 					// Tune title
-// 					if len(file.Title) != 0 {
-// 						rec.Title = file.Title
-// 					} else {
-// 						rec.Title = "[Title unknown]"
-// 					}
-// 					rec.Title = year + " - " + creator + title + " -- " + rec.Title
-// 					if local {
-// 						rec.URL = makeLocalAudioURL(item.Metadata.Identifier, file.Name, format, count) // Local
-// 					} else {
-// 						rec.URL = makeRemoteAudioURL(item.Metadata.Identifier, file.Name) // Local
-// 					}
-
-// 					download = append(download, DownloadAudio{
-// 						localFilename: rec.URL,
-// 						remoteUrl:     makeRemoteAudioURL(item.Metadata.Identifier, file.Name),
-// 					})
-
-// 					if _, ok := recMap[rec.URL]; !ok {
-// 						recMap[rec.URL] = rec
-// 						if !random {
-// 							m3.Add(rec)
-// 						}
-// 					}
-// 					count++
-// 					selected = true
-// 					break
-// 				}
-
-// 			}
-// 			if selected {
-// 				break
-// 			}
-// 		}
-// 	}
-
-// 	return download
-// }
-
 func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool) []DownloadAudio {
 
 	var download []DownloadAudio
@@ -212,13 +128,17 @@ func randomizeAudio(m3 *m3u.M3U, recMap map[string]*m3u.Record) {
 }
 
 func makePreferredFormats(pfs string) []string {
+	if pfs == "" {
+		return []string{VBR_MP3, MP3_128Kbps, MP3_64Kbps, OGG, MPEG_4}
+	}
+
 	fs := strings.Split(pfs, ",")
 
 	for i := 0; i < len(fs); i++ {
 		fs[i] = strings.TrimSpace(fs[i])
 	}
 
-	fs = append(fs, "VBR MP3", "MP3", "128Kbps MP3", "64Kbps MP3")
+	fs = append(fs, VBR_MP3, MP3_128Kbps, MP3_64Kbps, MPEG_4, OGG)
 	return fs
 }
 

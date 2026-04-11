@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"fmt"
 	ia "github.com/gnewton/iascrape"
+
 	"net/url"
 	//`"slices"
 	"strconv"
@@ -25,22 +26,29 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 
 	thumb := "https://" + item.D1 + item.Dir + "/" + Thumb
 
-	if has, jp2f := hasJP2ZipFile(item.Files, item.Metadata.Identifier); !has {
+	if has, jp2f := hasJP2ZipFile(item.Files, item.Metadata.Identifier); has {
 		// LP FRONT cover image
-		fmt.Println("<a  href=\"https://" + item.D1 + item.Dir + "/" + meta.Identifier + "_itemimage.jpg\">")
-		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
-		fmt.Println("</a>")
-	} else {
-		// LP FRONT cover image
-		fmt.Println("<a title='High resolution front cover' href=\"" + makeJP2ImageUrl(jp2f, item, "0") + "\">")
+		fmt.Println("<a title='Link to high resolution front cover' href=\"" + makeJP2ImageUrl(jp2f, item, "0") + "\">")
 		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
 		fmt.Println("</a>")
 
 		// LP BACK cover image
 		jp2ImageUrl := makeJP2ImageUrl(jp2f, item, "1")
-		fmt.Println("<a title='High resolution back cover' href=\"" + jp2ImageUrl + "\">")
+		fmt.Println("<a title='Link to high resolution back cover' href=\"" + jp2ImageUrl + "\">")
 		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + jp2ImageUrl + "'>")
 		fmt.Println("</a>")
+	} else {
+		// LP FRONT cover image
+		//frontCoverBigLink := findFrontCoverBigLink(item.Files, meta.Identifier)
+		frontCoverBigLink := "https://" + item.D1 + item.Dir + "/" + findFrontCoverBigLink(item.Files, meta.Identifier)
+		if frontCoverBigLink != "" {
+			fmt.Printf("<a  title='Link to high resolution front cover' href=\"%s\">\n", frontCoverBigLink)
+		}
+		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
+		if frontCoverBigLink != "" {
+			fmt.Println("</a>")
+		}
+
 	}
 	fmt.Println("</td>")
 
@@ -51,7 +59,7 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 
 	var year string
 	if meta.CanonicalYear == 0 {
-		year = "[Unknown year]"
+		year = "[Year?]"
 	} else {
 		year = strconv.Itoa(meta.CanonicalYear)
 	}
@@ -61,7 +69,7 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 	fmt.Printf("%s <a title='Details at archive.org' href=\"https://archive.org/details/%s\">%s</a>\n", year, meta.Identifier, title)
 
 	if creator != "?" {
-		fmt.Printf(" - <i><a title='Search for artist at archive.org' href=\"%s\">%s</a></i>\n", CREATOR_SEARCH_PREFIX+creator+"%22", creator)
+		fmt.Printf(" - <i><a title='Search for artist at archive.org' href=\"%s\">%s</a></i>\n", CREATOR_SEARCH_PREFIX+creator+"%22 AND mediatype:audio", creator)
 	} else {
 		fmt.Printf(" - <i>%s</i>\n", creator)
 	}
@@ -150,7 +158,7 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 			fmt.Println("        Your browser does not support the audio element.")
 			fmt.Println("      </audio>")
 
-			if len(wantedCopies) == 1 {
+			if len(wantedCopies) == 1 && verbose {
 				fmt.Printf("&nbsp; %s\n", f.MD5[len(f.MD5)-4:])
 			}
 
@@ -186,25 +194,12 @@ func makeFileTitle(title, name string, original []string, filenameTitle map[stri
 
 }
 
-func findBaseMP3Filenames(files *[]ia.File) []string {
-	var fns []string
-
-	for i := 0; i < len(*files); i++ {
-		f := (*files)[i]
-		if f.Format == VBR_MP3 {
-			name, _ := strings.CutSuffix(f.Name, VBR_MP3_SUFFIX)
-			fns = append(fns, name)
-			continue
-		}
-	}
-	return fns
-}
-
 func collectCopies(files []ia.File) map[string][]*ia.File {
 	nameCopies := make(map[string][]*ia.File)
 
 	for i := 0; i < len(files); i++ {
 		f := files[i]
+
 		if _, ok := FileFormats[f.Format]; ok {
 			// Assumes JSON ia.File ordering reflects track ordering. Might not be true for all
 			f.TrackOrder = i
@@ -214,7 +209,6 @@ func collectCopies(files []ia.File) map[string][]*ia.File {
 			var ok bool
 			if copyFiles, ok = nameCopies[baseName]; !ok {
 				copyFiles = []*ia.File{&f}
-
 			} else {
 				copyFiles = append(copyFiles, &f)
 			}
@@ -234,6 +228,7 @@ func findWantedCopies(copies map[string][]*ia.File, wantedFormats []string) []*i
 			wantedCopies = append(wantedCopies, wantedCopy)
 		}
 	}
+
 	return wantedCopies
 }
 
@@ -250,7 +245,7 @@ func findWantedCopy(files []*ia.File, wantedFormats []string) *ia.File {
 
 func makeFileBaseName(s string, format string) string {
 	if ext, ok := FileFormats[format]; ok {
-		return strings.TrimSuffix(s, ext)
+		return strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(s, ext), "_vbr"), ".mp3")
 	}
 
 	return s
@@ -259,4 +254,20 @@ func makeFileBaseName(s string, format string) string {
 
 func comment(s string) {
 	fmt.Printf("<!-- %s -->\n", s)
+}
+
+func findFrontCoverBigLink(files []ia.File, id string) string {
+
+	for i := 0; i < len(files); i++ {
+		file := files[i]
+		if file.Name == id+"_itemimage.jpg" {
+			return id + "_itemimage.jpg"
+		} else {
+			if file.Name == "cover.jpg" {
+				return "cover.jpg"
+			}
+		}
+
+	}
+	return ""
 }

@@ -11,6 +11,7 @@ import (
 	"math"
 	"slices"
 	"strconv"
+	"strings"
 	//"net/url"
 	"os"
 	//"time"
@@ -21,11 +22,12 @@ type args struct {
 	CacheFile        string   `arg:"-c,--cache-file" help:"Location of item JSON cache file" default:"cache_item.db"`
 	Debug            bool     `arg:"-D" help:"Debug mode"`
 	Dir              string   `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
-	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
+	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'MPEG-4 Audio','Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
 	IncludeIDFile    string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
 	LocalAudio       bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
 	Limit            int64    `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
 	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
+	MusicFilter      bool     `arg:"-M,--music" help:"Filter out non music. Adds "`
 	Offset           int64    `arg:"-o,--offset" help:"Skit this number of results before starting limit count" default:"0"`
 	Queries          []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random           bool     `arg:"-r" help:"Order of audio items in playlist is random"`
@@ -38,6 +40,7 @@ type args struct {
 	Verbose          bool     `arg:"-v" help:"Verbose output"`
 	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
 	Years            []int    `arg:"-y" help:"Limit by year range. Two year values, start end (inclusive). i.e. -y 1980 1990"`
+	YearMapFile      string   `arg:"-Y" help:"File containing 'id year' mappings. ID space YEAR"`
 }
 
 func main() {
@@ -85,6 +88,12 @@ func main() {
 
 	}
 
+	var idYear map[string]int
+
+	if len(args.YearMapFile) != 0 {
+		idYear = loadIDYear(args.YearMapFile)
+	}
+
 	client := ia.NewClient()
 	recMap := make(map[string]*m3u.Record)
 	var m3 *m3u.M3U
@@ -101,12 +110,15 @@ func main() {
 		log.Println("   Limit", limit)
 	}
 
-	var acceptedTunes []*ia.ItemTopLevelMetadata
+	var acceptedItems []*ia.ItemTopLevelMetadata
 
 	loadedIDs := make(map[string]struct{})
 
 	if args.IncludeIDFile != "" {
-		err := loadExtraIDs(&acceptedTunes, loadedIDs, &args, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
+		if args.Verbose {
+			log.Println("Loading extras", args.IncludeIDFile)
+		}
+		err := loadExtraIDs(&acceptedItems, loadedIDs, &args, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -167,7 +179,7 @@ func main() {
 		}
 
 		//search.Query = search.Query + "&sorts=btih" //"&sort%5B%5D=year+desc"
-		search.Query = search.Query + "&sorts=year+desc" //"&sort%5B%5D=year+desc"
+		//search.Query = search.Query + "&sorts=year+desc" //"&sort%5B%5D=year+desc"
 		var count int = 0
 		stop := false
 		for {
@@ -214,7 +226,7 @@ func main() {
 					if item == nil {
 						continue
 					}
-					processItem(&acceptedTunes, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
+					processItem(&acceptedItems, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
 				}
 
 				count++
@@ -227,23 +239,24 @@ func main() {
 	}
 
 	var totalTunes = 0
-	var wantedFormats []string
-	if args.Formats != "" {
-		wantedFormats = makePreferredFormats(args.Formats)
-	} else {
-		wantedFormats = []string{"VBR MP3", "MP3", "64Kbps MP3", "128Kbps MP3"}
-	}
+
+	wantedFormats := makePreferredFormats(args.Formats)
+
 	var dlAudio []DownloadAudio
 
+	adjustYears(idYear, &acceptedItems)
+
+	if m3uOut || args.HTMLResults {
+		slices.SortFunc(acceptedItems, itemsByYear) // Order by year
+	}
+
 	if m3uOut {
-		slices.SortFunc(acceptedTunes, tunesByYear) // Order by year
-		for i := 0; i < len(acceptedTunes); i++ {
-			item := acceptedTunes[i]
+		for i := 0; i < len(acceptedItems); i++ {
+			item := acceptedItems[i]
 			copies := collectCopies(item.Files)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder) // []*ia.File
 			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, m3, recMap, args.Random, args.LocalAudio)...)
-
 		}
 		w := bufio.NewWriter(file)
 
@@ -258,17 +271,23 @@ func main() {
 	}
 
 	if args.HTMLResults {
-		slices.SortFunc(acceptedTunes, tunesByYear) // Order by year
 		fmt.Println("<html>")
+		fmt.Println()
+		for i := 0; i < len(args.Queries); i++ {
+			fmt.Printf("<!-- Query %d = [%s]  -->\n", i+1, args.Queries[i])
+		}
+		fmt.Printf("\n\n<!-- Offset=%d Limit=%d -->", args.Offset, args.Limit)
+
+		fmt.Println()
 		fmt.Println("<body>")
 		fmt.Println("<table  style='border-collapse: collapse;' cellpadding='5'>")
 
-		for i := 0; i < len(acceptedTunes); i++ {
-			copies := collectCopies(acceptedTunes[i].Files)
+		for i := 0; i < len(acceptedItems); i++ {
+			copies := collectCopies(acceptedItems[i].Files)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder)
 			//totalTunes += simpleHTML(acceptedTunes[i], makePreferredFormats(args.Formats), args.Verbose)
-			totalTunes += simpleHTML(acceptedTunes[i], wantedCopies, args.Verbose)
+			totalTunes += simpleHTML(acceptedItems[i], wantedCopies, args.Verbose)
 		}
 
 		fmt.Println("</table>")
@@ -277,7 +296,7 @@ func main() {
 	}
 
 	if args.Verbose {
-		log.Println("Total items:", len(acceptedTunes))
+		log.Println("Total items:", len(acceptedItems))
 		log.Println("Total tunes:", totalTunes)
 	}
 }
@@ -336,12 +355,21 @@ var idList = []string{
 	"lp_kilts-on-parade_st-columcilles-united-gaelic-pipe-band",
 }
 
-func tunesByYear(a, b *ia.ItemTopLevelMetadata) int {
-	if b.Metadata.CanonicalYear == 0 && a.Metadata.CanonicalYear == 0 {
+func itemsByYear(a, b *ia.ItemTopLevelMetadata) int {
+	//if b.Metadata.CanonicalYear == 0 && a.Metadata.CanonicalYear == 0 {
+	if b.Metadata.CanonicalYear == a.Metadata.CanonicalYear {
 		//if a.Metadata.Source == "Vinyl LP" && a.Metadata.Source != "Vinyl LP" {
 		//			return -2
 		//}
-		return cmp.Compare(a.Metadata.Titles[0], b.Metadata.Titles[0])
+		//
+		// For 78s, will cluster 2 sides
+		if strings.Contains(a.Metadata.Identifier, "_gbia") && strings.Contains(b.Metadata.Identifier, "_gbia") {
+			aParts := strings.Split(a.Metadata.Identifier, "_gbia")
+			bParts := strings.Split(b.Metadata.Identifier, "_gbia")
+			return cmp.Compare(aParts[1], bParts[1])
+		} else {
+			return cmp.Compare(a.Metadata.Titles[0], b.Metadata.Titles[0])
+		}
 	}
 
 	if b.Metadata.CanonicalYear == a.Metadata.CanonicalYear {
