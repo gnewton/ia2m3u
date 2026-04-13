@@ -238,7 +238,7 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
+func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
 
 	if len(item.Metadata.Identifier) == 0 {
 		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
@@ -343,7 +343,7 @@ func loadIDYear(filename string) map[string]int {
 	return idYear
 }
 
-func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, recMap map[string]*m3u.Record, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
+func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
@@ -368,7 +368,7 @@ func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[strin
 		}
 		loadedIDs[id] = struct{}{}
 
-		err = processItem(acceptedItems, item, args, client, itemCache, recMap, m3, m3uOut, nil, uniqueAudioFiles, 0)
+		err = processItem(acceptedItems, item, args, client, itemCache, m3, m3uOut, nil, uniqueAudioFiles, 0)
 
 		if err != nil {
 			return err

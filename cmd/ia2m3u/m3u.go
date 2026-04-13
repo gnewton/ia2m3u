@@ -32,7 +32,7 @@ type FileFormat struct {
 	File         *ia.File
 }
 
-func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U, recMap map[string]*m3u.Record, random bool, local bool) []DownloadAudio {
+func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U, random bool, local bool) []DownloadAudio {
 
 	var download []DownloadAudio
 
@@ -70,14 +70,7 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U
 				remoteUrl:     makeRemoteAudioURL(item.Metadata.Identifier, tuneFile.Name),
 			})
 		}
-
-		if _, ok := recMap[rec.URL]; !ok {
-			recMap[rec.URL] = rec
-			if !random {
-				m3.Add(rec)
-			}
-		}
-
+		m3.Add(rec)
 	}
 
 	return download
@@ -125,10 +118,19 @@ func addAll(m3 *m3u.M3U, records []*m3u.Record) {
 	}
 }
 
-func randomizeAudio(m3 *m3u.M3U, recMap map[string]*m3u.Record) {
-	for _, value := range recMap {
-		m3.Add(value)
+func randomizeAudio(m3 *m3u.M3U) *m3u.M3U {
+	records := m3.Records()
+	tmp := make(map[*m3u.Record]struct{})
+
+	for i := 0; i < len(records); i++ {
+		tmp[records[i]] = struct{}{}
 	}
+
+	randomM3U := new(m3u.M3U)
+	for key, _ := range tmp {
+		randomM3U.Add(key)
+	}
+	return randomM3U
 
 }
 

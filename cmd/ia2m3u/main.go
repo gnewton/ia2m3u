@@ -97,7 +97,7 @@ func main() {
 	}
 
 	client := ia.NewClient()
-	recMap := make(map[string]*m3u.Record)
+
 	var m3 *m3u.M3U
 	if m3uOut {
 		m3 = new(m3u.M3U)
@@ -120,7 +120,7 @@ func main() {
 		if args.Verbose {
 			log.Println("Loading extras", args.IncludeIDFile)
 		}
-		err := loadExtraIDs(&acceptedItems, loadedIDs, &args, client, itemCache, recMap, m3, m3uOut, uniqueAudioFiles)
+		err := loadExtraIDs(&acceptedItems, loadedIDs, &args, client, itemCache, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -180,7 +180,7 @@ func main() {
 		if item == nil {
 			log.Fatal("Item is nil", id)
 		}
-		err = processItem(&acceptedItems, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, 0)
+		err = processItem(&acceptedItems, item, &args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, 0)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -262,7 +262,7 @@ func main() {
 					if item == nil {
 						continue
 					}
-					err = processItem(&acceptedItems, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
+					err = processItem(&acceptedItems, item, &args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -295,7 +295,7 @@ func main() {
 			copies := collectCopies(item.Files)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder) // []*ia.File
-			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, m3, recMap, args.Random, args.LocalAudio)...)
+			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, m3, args.Random, args.LocalAudio)...)
 		}
 		w := bufio.NewWriter(file)
 
