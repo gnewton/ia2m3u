@@ -69,7 +69,7 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 	fmt.Printf("%s <a title='Details at archive.org' href=\"https://archive.org/details/%s\">%s</a>\n", year, meta.Identifier, title)
 
 	if creator != "?" {
-		fmt.Printf(" - <i><a title='Search for artist at archive.org' href=\"%s\">%s</a></i>\n", CREATOR_SEARCH_PREFIX+creator+"%22 AND mediatype:audio", creator)
+		fmt.Printf(" - <i><a title='Search for artist at archive.org' href=\"%s\">%s</a></i>\n", CREATOR_SEARCH_PREFIX+creator+") AND mediatype:audio", creator)
 	} else {
 		fmt.Printf(" - <i>%s</i>\n", creator)
 	}
