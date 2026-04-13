@@ -59,15 +59,17 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U
 		}
 		rec.Title = year + " - " + creator + title + " -- " + rec.Title
 		if local {
-			rec.URL = makeLocalAudioURL(item.Metadata.Identifier, tuneFile.Name, tuneFile.Format, i) // Local
+			rec.URL = makeLocalAudioURL(item.Metadata.Identifier, tuneFile.MD5, tuneFile.Name, tuneFile.Format, i) // Local
 		} else {
 			rec.URL = makeRemoteAudioURL(item.Metadata.Identifier, tuneFile.Name) // Local
 		}
 
-		download = append(download, DownloadAudio{
-			localFilename: rec.URL,
-			remoteUrl:     makeRemoteAudioURL(item.Metadata.Identifier, tuneFile.Name),
-		})
+		if local {
+			download = append(download, DownloadAudio{
+				localFilename: rec.URL,
+				remoteUrl:     makeRemoteAudioURL(item.Metadata.Identifier, tuneFile.Name),
+			})
+		}
 
 		if _, ok := recMap[rec.URL]; !ok {
 			recMap[rec.URL] = rec
@@ -85,7 +87,10 @@ func makeRemoteAudioURL(id, filename string) string {
 	return AudioFileBaseUrl + id + "/" + url.PathEscape(filename)
 }
 
-func makeLocalAudioURL(id, filename string, format string, n int) string {
+func makeLocalAudioURL(id, hash, filename string, format string, n int) string {
+	Z := cleanString(strings.TrimSuffix(filename, filepath.Ext(filename)))
+
+	log.Println("345     |", cleanString(filename))
 	id = strings.TrimRight(id, ".")
 	suffix := "mp3"
 	subtype := ""
@@ -105,13 +110,13 @@ func makeLocalAudioURL(id, filename string, format string, n int) string {
 		subtype = "_VBR"
 	}
 
-	log.Println("~~~~~~~  Localfile:", suffix, "-", format)
 	number := ""
 	if n < 10 {
 		number = "0"
 	}
 	number = number + strconv.Itoa(n)
-	return id + subtype + "__" + number + "." + suffix
+	//return id + "_" + number + "_" + hash[len(hash)-8:] + "_" + subtype + "." + suffix
+	return id + "__" + number + "_" + Z + "_" + hash[len(hash)-4:] + subtype + "." + suffix
 }
 
 func addAll(m3 *m3u.M3U, records []*m3u.Record) {

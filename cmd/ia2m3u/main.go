@@ -9,6 +9,7 @@ import (
 	m3u "github.com/k3a/go-m3u"
 	"log"
 	"math"
+	"net/url"
 	"slices"
 	"strconv"
 	"strings"
@@ -24,10 +25,11 @@ type args struct {
 	Dir              string   `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
 	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'MPEG-4 Audio','Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
 	IncludeIDFile    string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
+	Identifier       string   `arg:"-i,--id" help:"Single archive.org identifier to download"`
 	LocalAudio       bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
 	Limit            int64    `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
 	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
-	MusicFilter      bool     `arg:"-M,--music" help:"Filter out non music. Adds "`
+	MusicFilter      bool     `arg:"-M,--music" help:"Filter out non music. "`
 	Offset           int64    `arg:"-o,--offset" help:"Skit this number of results before starting limit count" default:"0"`
 	Queries          []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random           bool     `arg:"-r" help:"Order of audio items in playlist is random"`
@@ -135,7 +137,9 @@ func main() {
 	//queries := []string{"collection=78rpm AND subject=blues"}
 
 	if len(args.Years) == 2 {
-		args.Queries[0] = args.Queries[0] + " AND date:[" + strconv.Itoa(args.Years[0]) + "-01-01 TO " + strconv.Itoa(args.Years[1]) + "-12-31]"
+		for i := 0; i < len(args.Queries); i++ {
+			args.Queries[i] = args.Queries[i] + " AND date:[" + strconv.Itoa(args.Years[0]) + "-01-01 TO " + strconv.Itoa(args.Years[1]) + "-12-31]"
+		}
 	}
 
 	//queries := []string{"title=(bagpipe) AND mediatype=(audio)", "title=(bagpipe) AND mediatype=(audio)"}
@@ -154,8 +158,40 @@ func main() {
 
 	//query := "fields=*&q=mediatype%3Aaudio&sorts=btih"
 
+	if args.Identifier != "" {
+		id := args.Identifier
+		item, err := ia.GetItem(id, client, itemCache, args.Verbose)
+		if err != nil {
+			log.Println(err)
+		}
+		if item == nil {
+			log.Fatal(id)
+		}
+		loadedIDs[id] = struct{}{}
+
+		if len(item.Metadata.Identifier) == 0 {
+			log.Println("Missing identifier for results id=", id)
+			log.Println(item)
+		}
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		if item == nil {
+			log.Fatal("Item is nil", id)
+		}
+		err = processItem(&acceptedItems, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, 0)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	for _, query := range args.Queries {
+		if args.MusicFilter {
+			query = applyMusicFilter(query)
+		}
 		query = "q=" + escapeQuery(query)
+
 		search := ia.Search{
 			Query:      query,
 			Client:     client,
@@ -226,7 +262,10 @@ func main() {
 					if item == nil {
 						continue
 					}
-					processItem(&acceptedItems, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
+					err = processItem(&acceptedItems, item, &args, client, itemCache, recMap, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
 
 				count++
@@ -266,7 +305,10 @@ func main() {
 		w.Flush()
 
 		if args.LocalAudio {
-			downloadAudio(dlAudio, args.Verbose)
+			err = downloadAudio(dlAudio, args.Verbose)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
@@ -274,7 +316,18 @@ func main() {
 		fmt.Println("<html>")
 		fmt.Println()
 		for i := 0; i < len(args.Queries); i++ {
-			fmt.Printf("<!-- Query %d = [%s]  -->\n", i+1, args.Queries[i])
+			query := args.Queries[i]
+			if args.MusicFilter {
+				query = applyMusicFilter(query)
+			}
+			query = "q=" + escapeQuery(query)
+
+			fmt.Printf("<!-- Query %d = [%s]  -->\n", i+1, query)
+			equery, err := url.QueryUnescape(query)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("<!-- ### [%s]  -->\n", equery)
 		}
 		fmt.Printf("\n\n<!-- Offset=%d Limit=%d -->", args.Offset, args.Limit)
 

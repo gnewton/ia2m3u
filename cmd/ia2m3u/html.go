@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var CREATOR_SEARCH_PREFIX = "https://archive.org/search?query=creator%3A%22"
+var CREATOR_SEARCH_PREFIX = "https://archive.org/search?query=creator:("
 
 func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose bool) int {
 

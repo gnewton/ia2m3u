@@ -13,14 +13,15 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var SPACE_AND = "%20AND%20"
-var AUDIOQUERY = "mediatype%3A(audio)"
+var SPACE_AND = " AND "
+var AUDIOQUERY = "mediatype:(audio)"
 
 // Archive.org urls, partial urls and specific filenames
 var AudioFileBaseUrl = "https://archive.org/download/" // + /{id}/{filename}.mp3
@@ -73,6 +74,8 @@ var musicFilter map[string][]string = map[string][]string{
 	},
 	"collection": []string{
 		"audio_religion",
+		"samples_only",
+		"community",
 	},
 }
 
@@ -161,7 +164,10 @@ func verifyAudio(client *http.Client, url string, verbose bool) error {
 }
 
 func escapeQuery(q string) string {
-	return strings.ReplaceAll(url.PathEscape(q), "=", "%3A")
+	// q = strings.ReplaceAll(url.PathEscape(q), "=", "%3A")
+	// q = strings.ReplaceAll(url.PathEscape(q), " ", "%20")
+	// q = strings.ReplaceAll(url.PathEscape(q), "&", "%26")
+	return url.QueryEscape(q)
 }
 
 func checkFileExists(filePath string) bool {
@@ -191,13 +197,14 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 		// Get the data
 		resp, err := http.Get(downloadUrls[i].remoteUrl)
 		if err != nil {
+			log.Println("http get error")
 			return err
 		}
 		defer resp.Body.Close()
 
 		// Check server response
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("bad status: %s", resp.Status)
+			return fmt.Errorf("Bad HTTP status code: %s", resp.Status)
 		}
 
 		// Writer the body to file
@@ -403,4 +410,30 @@ func adjustYears(idYear map[string]int, acceptedItems *[]*ia.ItemTopLevelMetadat
 			item.Metadata.CanonicalYear = year
 		}
 	}
+}
+
+func applyMusicFilter(q string) string {
+	for field, values := range musicFilter {
+		for _, value := range values {
+			q = q + " AND -" + field + ":" + "(" + value + ")"
+		}
+	}
+	return q
+}
+
+var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
+
+func cleanString(s string) string {
+	s = nonAlphanumericRegex.ReplaceAllString(s, " ")
+	parts := strings.Fields(s)
+
+	s = ""
+
+	for i := 0; i < len(parts); i++ {
+		if i > 0 {
+			s = s + "_"
+		}
+		s = s + parts[i]
+	}
+	return s
 }
