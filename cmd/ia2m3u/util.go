@@ -437,3 +437,28 @@ func cleanString(s string) string {
 	}
 	return s
 }
+
+// Uses Year + Title + Creator to dedup; simplistic; possible errors
+func dedup(items []*ia.ItemTopLevelMetadata) []*ia.ItemTopLevelMetadata {
+	uniq := make(map[string]*ia.ItemTopLevelMetadata)
+
+	results := make([]*ia.ItemTopLevelMetadata, 0)
+
+	for i := 0; i < len(items); i++ {
+		item := items[i]
+		metadata := item.Metadata
+
+		if len(metadata.Creators) == 0 || metadata.CanonicalYear == 0 || len(metadata.Titles[0]) == 0 || len(metadata.Creators[0]) == 0 {
+			results = append(results, item)
+		} else {
+			uniq[strconv.Itoa(metadata.CanonicalYear)+metadata.Titles[0]+metadata.Creators[0]] = item
+		}
+
+	}
+
+	for _, item := range uniq {
+		results = append(results, item)
+	}
+
+	return results
+}
