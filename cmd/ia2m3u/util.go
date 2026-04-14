@@ -181,14 +181,33 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 		if verbose {
 			log.Printf("  ----- Download URL: %s   to local file: %s\n", downloadUrls[i].remoteUrl, downloadUrls[i].localFilename)
 		}
+		lfilename := downloadUrls[i].localFilename
 		// Create the file
-		if checkFileExists(downloadUrls[i].localFilename) {
+		if checkFileExists(lfilename){
 			if verbose {
-				log.Println("Exists")
+				log.Println("Exists", lfilename)
 			}
-			continue
+			// If exists and is length 0, delete
+			fi, err := os.Stat(lfilename)
+			if err != nil {
+				return err
+			}
+			// get the size
+			if fi.Size() > 0{
+				continue
+			}else{
+				err := os.Remove(lfilename)
+				if err != nil {
+					fmt.Println("Error deleting file:", err)
+					return err
+				}
+			}
 		}
-		out, err := os.Create(downloadUrls[i].localFilename)
+
+
+
+		
+		out, err := os.Create(lfilename)
 		if err != nil {
 			return err
 		}

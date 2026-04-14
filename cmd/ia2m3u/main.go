@@ -203,6 +203,9 @@ func main() {
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
 					id := results[i].Identifier
+					if args.Verbose{
+						log.Println(count, "Getting ",results[i].Identifier)
+					}
 					// Alreaded loaded in this session
 					if _, ok := loadedIDs[id]; ok {
 						continue
