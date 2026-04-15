@@ -20,101 +20,39 @@ import (
 	"time"
 )
 
-var SPACE_AND = " AND "
-var AUDIOQUERY = "mediatype:(audio)"
 
-// Archive.org urls, partial urls and specific filenames
-var AudioFileBaseUrl = "https://archive.org/download/" // + /{id}/{filename}.mp3
-var ItemBaseUrl = "https://archive.org/details/"
-var LPBackcoverImage_Format = "Single Page Processed JP2 ZIP"
-var LPBackcoverImage_Suffix = "_jp2.zip"
-var LPImagesPHP = "/view_archive.php?archive="
-var Thumb = "__ia_thumb.jpg"
-var baseUrl = "https://archive.org/metadata/"
-
-// var uilleanSource = "https://commons.wikimedia.org/wiki/File:UilleannPipes.jpg"
-const AIFF = "AIFF"
-const FLAC = "Flac"
-
-// const MP3 = "MP3"
-const MPEG_4 = "MPEG-4 Audio"
-const MP3_128Kbps = "128Kbps MP3"
-const MP3_64Kbps = "64Kbps MP3"
-const OGG = "Ogg Vorbis"
-const VBR_MP3 = "VBR MP3"
-
-const AIFF_SUFFIX = ".aiff"
-const FLAC_SUFFIX = ".flac"
-const MP3_128Kbps_SUFFIX = "_128kb.mp3"
-const MP3_64Kbps_SUFFIX = "_64kb.mp3"
-const OGG_SUFFIX = ".ogg"
-const VBR_MP3_SUFFIX = "_vbr.mp3"
-const MPEG_4_SUFFIX = ".m4a"
-
-var FileFormats = map[string]string{
-	MP3_128Kbps: MP3_128Kbps_SUFFIX,
-	MP3_64Kbps:  MP3_64Kbps_SUFFIX,
-	AIFF:        AIFF_SUFFIX,
-	FLAC:        FLAC_SUFFIX,
-	OGG:         OGG_SUFFIX,
-	VBR_MP3:     VBR_MP3_SUFFIX,
-	MPEG_4:      MPEG_4_SUFFIX,
-}
-
-// AND -subject:(Non-Music) AND -subject:(\"Spoken Word\") AND -subject:(\"Monolog\")  AND -subject:(\"Novelty\") AND -subject:(\"Comedy\") AND -collection:(\"audio_religion\") AND -subject:(\"sample\") AND -subject:(\"interviews\")
-var musicFilter map[string][]string = map[string][]string{
-	"subject": []string{
-		"Non-Music",
-		"Spoken Word",
-		"Monolog",
-		"Novelty",
-		"monologue",
-		"trump (jew's harp)",
-		"Comedy",
-		"sample",
-		"Poem",
-		"verse",
-		"interviews",
-	},
-	"collection": []string{
-		"audio_religion",
-		"samples_only",
-		"community",
-	},
-}
-
-func checkArgs(args *args) (bool, error) {
+func (a *args) check() (bool, error) {
 	m3uOut := true
 	//Conflicting args
-	if args.TxtResults && args.CacheLoad {
+	if a.TxtResults && a.CacheLoad {
 		return false, errors.New("Only one of -O and -C can be true")
 	}
 
-	if args.TxtResults && args.LocalAudio {
+	if a.TxtResults && a.LocalAudio {
 		return false, errors.New("Only one of -O and -L can be true")
 	}
 
-	if args.CacheLoad && args.LocalAudio {
+	if a.CacheLoad && a.LocalAudio {
 		return false, errors.New("Only one of -C and -L can be true")
 	}
 
-	if len(args.Years) != 2 && len(args.Years) != 0 {
+	if len(a.Years) != 2 && len(a.Years) != 0 {
 		log.Fatal("Years requries 2 int args: start year end year")
 	}
 
-	if len(args.Years) == 2 && args.Years[0] >= args.Years[1] {
+	if len(a.Years) == 2 && a.Years[0] >= a.Years[1] {
 		log.Fatal("Start year must be less than end year")
 	}
 
-	if args.TxtResults || args.CacheLoad {
+	if a.TxtResults || a.CacheLoad {
 		m3uOut = false
 	}
 
-	for i := 0; i < len(args.Queries); i++ {
-		if len(args.Queries[i]) == 0 {
-			args.Queries[i] = AUDIOQUERY
+	for i := 0; i < len(a.Queries); i++ {
+		if len(a.Queries[i]) == 0 {
+			a.Queries[i] = AUDIOQUERY
 		} else {
-			args.Queries[i] = args.Queries[i] + SPACE_AND + AUDIOQUERY
+			a.Queries[i] = a.Queries[i] + SPACE_AND + AUDIOQUERY
 		}
 	}
 
@@ -168,9 +106,6 @@ func verifyAudio(client *http.Client, url string, verbose bool) error {
 }
 
 func escapeQuery(q string) string {
-	// q = strings.ReplaceAll(url.PathEscape(q), "=", "%3A")
-	// q = strings.ReplaceAll(url.PathEscape(q), " ", "%20")
-	// q = strings.ReplaceAll(url.PathEscape(q), "&", "%26")
 	return url.QueryEscape(q)
 }
 
@@ -187,7 +122,7 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 		}
 		lfilename := downloadUrls[i].localFilename
 		// Create the file
-		if checkFileExists(lfilename){
+		if checkFileExists(lfilename) {
 			if verbose {
 				log.Println("Exists", lfilename)
 			}
@@ -197,8 +132,9 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 				return err
 			}
 			// get the size
-			if fi.Size() > 0{
+			if fi.Size() > 0 {
 				continue
+
 			}else{
 				if verbose{
 					log.Println("Removing zero length file", lfilename)
@@ -211,9 +147,6 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 			}
 		}
 
-
-
-		
 		out, err := os.Create(lfilename)
 		if err != nil {
 			return err
@@ -403,29 +336,6 @@ func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[strin
 
 	}
 	return nil
-}
-
-func hasJP2ZipFile(files []ia.File, identifier string) (bool, string) {
-	for _, file := range files {
-		if file.Format == LPBackcoverImage_Format &&
-			file.Name == identifier+LPBackcoverImage_Suffix {
-			return true, file.Name
-		}
-	}
-	return false, ""
-}
-
-// d1 + LPImagesPHP + jp2-zip-FileName + "&file=" + jp2-zip-FileName_no_zip_suffix + "%2F" + identifier + "-band_0001.jp2&ext=jpg"
-func makeJP2ImageUrl(filename string, tm *ia.ItemTopLevelMetadata, fileNumber string) string {
-	return "https://" + tm.D1 + LPImagesPHP + tm.Dir + "/" + filename + "&file=" + filename[0:len(filename)-4] + "%2F" + tm.Metadata.Identifier + "_000" + fileNumber + ".jp2&ext=jpg"
-}
-
-func getFlacOpusURLs(id string) (string, string, string, string) {
-	return AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side1.flac",
-		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side2.flac",
-		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side1.opus",
-		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side2.opus"
-
 }
 
 // Replace unknown year with info from -Y file

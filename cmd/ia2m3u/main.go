@@ -49,11 +49,11 @@ type args struct {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	var args args
+	args := new(args)
 
-	arg.MustParse(&args)
+	arg.MustParse(args)
 
-	m3uOut, err := checkArgs(&args)
+	m3uOut, err := args.check()
 	if err != nil {
 		log.Println(err)
 	}
@@ -115,7 +115,7 @@ func main() {
 		if args.Verbose {
 			log.Println("Loading extras", args.IncludeIDFile)
 		}
-		err := loadExtraIDs(&acceptedItems, loadedIDs, &args, client, itemCache, m3, m3uOut, uniqueAudioFiles)
+		err := loadExtraIDs(&acceptedItems, loadedIDs, args, client, itemCache, m3, m3uOut, uniqueAudioFiles)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -149,7 +149,7 @@ func main() {
 		if item == nil {
 			log.Fatal("Item is nil", id)
 		}
-		err = processItem(&acceptedItems, item, &args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, 0)
+		err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, 0)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -203,8 +203,8 @@ func main() {
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
 					id := results[i].Identifier
-					if args.Verbose{
-						log.Println(count, "Getting ",results[i].Identifier)
+					if args.Verbose {
+						log.Println(count, "Getting ", results[i].Identifier)
 					}
 					// Alreaded loaded in this session
 					if _, ok := loadedIDs[id]; ok {
@@ -232,7 +232,7 @@ func main() {
 					if item == nil {
 						continue
 					}
-					err = processItem(&acceptedItems, item, &args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
+					err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -248,11 +248,8 @@ func main() {
 	}
 
 	var totalTunes = 0
-
 	wantedFormats := makePreferredFormats(args.Formats)
-
 	var dlAudio []DownloadAudio
-
 	adjustYears(idYear, &acceptedItems)
 
 	if args.Dedup {

@@ -271,3 +271,26 @@ func findFrontCoverBigLink(files []ia.File, id string) string {
 	}
 	return ""
 }
+
+func hasJP2ZipFile(files []ia.File, identifier string) (bool, string) {
+	for _, file := range files {
+		if file.Format == LPBackcoverImage_Format &&
+			file.Name == identifier+LPBackcoverImage_Suffix {
+			return true, file.Name
+		}
+	}
+	return false, ""
+}
+
+// d1 + LPImagesPHP + jp2-zip-FileName + "&file=" + jp2-zip-FileName_no_zip_suffix + "%2F" + identifier + "-band_0001.jp2&ext=jpg"
+func makeJP2ImageUrl(filename string, tm *ia.ItemTopLevelMetadata, fileNumber string) string {
+	return "https://" + tm.D1 + LPImagesPHP + tm.Dir + "/" + filename + "&file=" + filename[0:len(filename)-4] + "%2F" + tm.Metadata.Identifier + "_000" + fileNumber + ".jp2&ext=jpg"
+}
+
+func getFlacOpusURLs(id string) (string, string, string, string) {
+	return AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side1.flac",
+		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side2.flac",
+		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side1.opus",
+		AudioFileBaseUrl + id + "/disc1/" + id + "_disc1side2.opus"
+
+}
