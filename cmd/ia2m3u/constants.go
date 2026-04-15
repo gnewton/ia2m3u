@@ -44,13 +44,16 @@ var FileFormats = map[string]string{
 // AND -subject:(Non-Music) AND -subject:(\"Spoken Word\") AND -subject:(\"Monolog\")  AND -subject:(\"Novelty\") AND -subject:(\"Comedy\") AND -collection:(\"audio_religion\") AND -subject:(\"sample\") AND -subject:(\"interviews\")
 var musicFilter map[string][]string = map[string][]string{
 	"subject": []string{
-		"Non-Music",
-		"Spoken Word",
-		"Monolog",
-		"Novelty",
 		"Comedy",
-		"sample",
+		"Interview",
+		"Monolog",
+		"Non-Music",
+		"Novelty",
+		"Podcast",
+		"Spoken Word",
 		"interviews",
+		"sample",
+		"radio interview",
 	},
 	"collection": []string{
 		"audio_religion",
