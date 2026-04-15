@@ -68,8 +68,12 @@ var musicFilter map[string][]string = map[string][]string{
 		"Spoken Word",
 		"Monolog",
 		"Novelty",
+		"monologue",
+		"trump (jew's harp)",
 		"Comedy",
 		"sample",
+		"Poem",
+		"verse",
 		"interviews",
 	},
 	"collection": []string{
@@ -196,6 +200,9 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 			if fi.Size() > 0{
 				continue
 			}else{
+				if verbose{
+					log.Println("Removing zero length file", lfilename)
+				}
 				err := os.Remove(lfilename)
 				if err != nil {
 					fmt.Println("Error deleting file:", err)
@@ -231,6 +238,7 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 		if err != nil {
 			return err
 		}
+		time.Sleep(2 * time.Second)
 	}
 	return nil
 }
