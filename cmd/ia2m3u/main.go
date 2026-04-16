@@ -23,7 +23,7 @@ type args struct {
 	CacheLoad        bool     `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
 	Debug            bool     `arg:"-g" help:"Debug mode"`
 	Dedup            bool     `arg:"-D" help:"Deduplicate: Use Year, Title and Creator to decide if is a duplicate."`
-	Dir              string   `arg:"-d,--dir" help:"Directory to write m3u files (and audio if -L)" default:"."`
+	Dir              string   `arg:"-d,--dir" help:"Directory to write files (and audio if -L)" default:"./"`
 	Formats          string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'MPEG-4 Audio','Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
 	HTMLResults      bool     `arg:"-H,--simplehtml" help:"Produce simple HTML output to stdout. Does not produce any m3u output"`
 	Identifier       string   `arg:"-i,--id" help:"Single archive.org identifier to download"`
@@ -38,7 +38,7 @@ type args struct {
 	RejectFieldsFile string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
 	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
 	Smallest         bool     `arg:"-s" help:"Select the smallest sized audio file"`
-	Strm             bool     `arg:"-S" help:"Select the smallest sized audio file"`
+	Strm             bool     `arg:"-S" help:"Generate one stream per audio file"`
 	TitleInLocal     bool     `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
 	TxtResults       bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
 	Verbose          bool     `arg:"-v" help:"Verbose output"`
@@ -63,15 +63,6 @@ func main() {
 		log.Println("Wanted formats: ", args.Formats)
 	}
 
-	var file *os.File
-	if m3uOut {
-		file, err = os.Create(args.M3UFile)
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-	}
-
 	itemCache, err := ia.NewCache(args.CacheFile)
 	if err != nil {
 		log.Fatal(err)
@@ -86,6 +77,8 @@ func main() {
 
 	}
 
+	m3 := new(m3u.M3U)
+
 	var idYear map[string]int
 
 	if len(args.YearMapFile) != 0 {
@@ -94,10 +87,6 @@ func main() {
 
 	client := ia.NewClient()
 
-	var m3 *m3u.M3U
-	if m3uOut {
-		m3 = new(m3u.M3U)
-	}
 	uniqueAudioFiles := make(map[string]struct{})
 
 	offset := args.Offset
@@ -262,6 +251,12 @@ func main() {
 	}
 
 	if m3uOut {
+		file, err := os.Create(args.M3UFile)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
 		for i := 0; i < len(acceptedItems); i++ {
 			item := acceptedItems[i]
 			copies := collectCopies(item.Files)
