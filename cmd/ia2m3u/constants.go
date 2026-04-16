@@ -6,11 +6,12 @@ var AUDIOQUERY = "mediatype:(audio)"
 // Archive.org urls, partial urls and specific filenames
 var AudioFileBaseUrl = "https://archive.org/download/" // + /{id}/{filename}.mp3
 var ItemBaseUrl = "https://archive.org/details/"
+var baseUrl = "https://archive.org/metadata/"
+
 var LPBackcoverImage_Format = "Single Page Processed JP2 ZIP"
 var LPBackcoverImage_Suffix = "_jp2.zip"
 var LPImagesPHP = "/view_archive.php?archive="
 var Thumb = "__ia_thumb.jpg"
-var baseUrl = "https://archive.org/metadata/"
 
 // var uilleanSource = "https://commons.wikimedia.org/wiki/File:UilleannPipes.jpg"
 const AIFF = "AIFF"
