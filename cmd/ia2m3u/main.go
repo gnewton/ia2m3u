@@ -38,6 +38,7 @@ type args struct {
 	RejectFieldsFile string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
 	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
 	Smallest         bool     `arg:"-s" help:"Select the smallest sized audio file"`
+	Strm             bool     `arg:"-S" help:"Select the smallest sized audio file"`
 	TitleInLocal     bool     `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
 	TxtResults       bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
 	Verbose          bool     `arg:"-v" help:"Verbose output"`

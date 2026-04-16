@@ -20,9 +20,13 @@ import (
 	"time"
 )
 
-
 func (a *args) check() (bool, error) {
 	m3uOut := true
+
+	if a.Strm {
+		log.Fatal("Not implemented")
+	}
+
 	//Conflicting args
 	if a.TxtResults && a.CacheLoad {
 		return false, errors.New("Only one of -O and -C can be true")
@@ -135,8 +139,8 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 			if fi.Size() > 0 {
 				continue
 
-			}else{
-				if verbose{
+			} else {
+				if verbose {
 					log.Println("Removing zero length file", lfilename)
 				}
 				err := os.Remove(lfilename)
@@ -398,4 +402,12 @@ func dedup(items []*ia.ItemTopLevelMetadata) []*ia.ItemTopLevelMetadata {
 	}
 
 	return results
+}
+
+func makeStrm(item *ia.ItemTopLevelMetadata, tunes []*ia.File) {
+	for i := 0; i < len(tunes); i++ {
+		tuneFile := tunes[i]
+		makeRemoteAudioURL(item.Metadata.Identifier, tuneFile.Name) // Local
+	}
+
 }
