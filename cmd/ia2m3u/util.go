@@ -198,7 +198,7 @@ func loadRejectFieldsFile(rejectFilename string, rejectFields *map[string][]stri
 	return err
 }
 
-func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, uniqueAudioFiles map[string]struct{}, count int) error {
+func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLevelMetadata, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, rejectFields map[string][]string, count int, cacheLoad bool) error {
 
 	if len(item.Metadata.Identifier) == 0 {
 		log.Println("########################################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$     Missing identifier????")
@@ -213,26 +213,27 @@ func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLeve
 		log.Println("HandleItem:", count, "-", item.Metadata.Identifier)
 	}
 
-	if rejectByField(&item.Metadata, rejectFields, args.Verbose) {
-		if args.Verbose {
-			log.Println("Rejected by field")
+	if !cacheLoad{
+		if rejectByField(&item.Metadata, rejectFields, args.Verbose) {
+			if args.Verbose {
+				log.Println("Rejected by field")
+			}
+			return nil
 		}
-		return nil
+
+		*acceptedItems = append(*acceptedItems, item)
+
+		if args.HTMLResults {
+
+			//simpleHTML(count, item)
+			return nil
+		}
+
+		if args.TxtResults {
+			outputResults(count, &item.Metadata)
+			return nil
+		}
 	}
-
-	*acceptedItems = append(*acceptedItems, item)
-
-	if args.HTMLResults {
-
-		//simpleHTML(count, item)
-		return nil
-	}
-
-	if args.TxtResults {
-		outputResults(count, &item.Metadata)
-		return nil
-	}
-
 	if args.Debug {
 		debug(item)
 	}
@@ -303,7 +304,7 @@ func loadIDYear(filename string) map[string]int {
 	return idYear
 }
 
-func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, uniqueAudioFiles map[string]struct{}) error {
+func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, cacheLoad bool) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
@@ -326,9 +327,11 @@ func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[strin
 		if item == nil {
 			continue
 		}
-		loadedIDs[id] = struct{}{}
+		if !cacheLoad{
+			loadedIDs[id] = struct{}{}
+		}
 
-		err = processItem(acceptedItems, item, args, client, itemCache, m3, m3uOut, nil, uniqueAudioFiles, 0)
+		err = processItem(acceptedItems, item, args, client, itemCache, m3, m3uOut, nil, 0, cacheLoad)
 
 		if err != nil {
 			return err

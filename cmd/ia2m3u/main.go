@@ -16,6 +16,8 @@ import (
 	//"net/url"
 	"os"
 	//"time"
+	"net/http"
+    _ "net/http/pprof"
 )
 
 type args struct {
@@ -48,6 +50,10 @@ type args struct {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	go func() {
+            log.Println(http.ListenAndServe("localhost:6060", nil))
+        }()
 
 	args := new(args)
 
@@ -97,7 +103,6 @@ func main() {
 	if m3uOut {
 		m3 = new(m3u.M3U)
 	}
-	uniqueAudioFiles := make(map[string]struct{})
 
 	offset := args.Offset
 	limit := args.Limit
@@ -115,7 +120,7 @@ func main() {
 		if args.Verbose {
 			log.Println("Loading extras", args.IncludeIDFile)
 		}
-		err := loadExtraIDs(&acceptedItems, loadedIDs, args, client, itemCache, m3, m3uOut, uniqueAudioFiles)
+		err := loadExtraIDs(&acceptedItems, loadedIDs, args, client, itemCache, m3, m3uOut, args.CacheLoad)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -149,7 +154,7 @@ func main() {
 		if item == nil {
 			log.Fatal("Item is nil", id)
 		}
-		err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, 0)
+		err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, 0, args.CacheLoad)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -203,7 +208,7 @@ func main() {
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
 					id := results[i].Identifier
-					if args.Verbose {
+					if args.Verbose && count%1000 == 0{
 						log.Println(count, "Getting ", results[i].Identifier)
 					}
 					// Alreaded loaded in this session
@@ -216,25 +221,26 @@ func main() {
 						log.Println(err)
 					}
 					if item == nil {
-						log.Fatal(i)
-					}
-					loadedIDs[id] = struct{}{}
-
-					if len(item.Metadata.Identifier) == 0 {
-						log.Println("Missing identifier for results id=", id)
-						log.Println(item)
 						continue
 					}
+					if ! args.CacheLoad{
+						loadedIDs[id] = struct{}{}
+						if len(item.Metadata.Identifier) == 0 {
+							log.Println("Missing identifier for results id=", id)
+							log.Println(item)
+							continue
+						}
 
-					if err != nil {
-						log.Fatal(err)
-					}
-					if item == nil {
-						continue
-					}
-					err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, uniqueAudioFiles, count)
-					if err != nil {
-						log.Fatal(err)
+						if err != nil {
+							log.Fatal(err)
+						}
+						if item == nil {
+							continue
+						}
+						err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, count, args.CacheLoad)
+						if err != nil {
+							log.Fatal(err)
+						}
 					}
 				}
 
