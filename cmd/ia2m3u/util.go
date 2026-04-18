@@ -28,13 +28,13 @@ func (a *args) check() (bool, error) {
 	}
 
 	//Conflicting args
-	if a.TxtResults && a.CacheLoad {
-		return false, errors.New("Only one of -O and -C can be true")
-	}
+	// if a.TxtResults && a.CacheLoad {
+	// 	return false, errors.New("Only one of -O and -C can be true")
+	// }
 
-	if a.TxtResults && a.LocalAudio {
-		return false, errors.New("Only one of -O and -L can be true")
-	}
+	// if a.TxtResults && a.LocalAudio {
+	// 	return false, errors.New("Only one of -O and -L can be true")
+	// }
 
 	if a.CacheLoad && a.LocalAudio {
 		return false, errors.New("Only one of -C and -L can be true")
@@ -48,9 +48,11 @@ func (a *args) check() (bool, error) {
 		log.Fatal("Start year must be less than end year")
 	}
 
-	if a.TxtResults || a.CacheLoad {
+	if  a.CacheLoad {
 		m3uOut = false
 	}
+
+	a.M3UFile = a.Identifier + ".m3u"
 
 	for i := 0; i < len(a.Queries); i++ {
 		if len(a.Queries[i]) == 0 {
@@ -137,6 +139,7 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 			}
 			// get the size
 			if fi.Size() > 0 {
+				// Actually, should to an HTTP HEAD on the file and compare file sizes...
 				continue
 
 			} else {
@@ -233,10 +236,10 @@ func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLeve
 			return nil
 		}
 
-		if args.TxtResults {
-			outputResults(count, &item.Metadata)
-			return nil
-		}
+		// if args.TxtResults {
+		// 	outputResults(count, &item.Metadata)
+		// 	return nil
+		// }
 	}
 	if args.Debug {
 		debug(item)

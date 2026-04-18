@@ -56,6 +56,7 @@ var musicFilter map[string][]string = map[string][]string{
 		"Podcast",
 		"Poem",
 		"Spoken Word",
+		"Radio Program",
 		"Verse",
 		"ballad",
 		"interviews",

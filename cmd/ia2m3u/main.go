@@ -16,8 +16,6 @@ import (
 	//"net/url"
 	"os"
 	//"time"
-	"net/http"
-    _ "net/http/pprof"
 )
 
 type args struct {
@@ -32,7 +30,7 @@ type args struct {
 	IncludeIDFile    string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
 	Limit            int64    `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
 	LocalAudio       bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
-	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file" default:"./playlist_ia.m3u"`
+	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file name. Default is {Metadata.Identifier}.m3u"`
 	MusicFilter      bool     `arg:"-M,--music" help:"Filter out non music. "`
 	Offset           int64    `arg:"-o,--offset" help:"Skit this number of results before starting limit count" default:"0"`
 	Queries          []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
@@ -42,7 +40,7 @@ type args struct {
 	Smallest         bool     `arg:"-s" help:"Select the smallest sized audio file"`
 	Strm             bool     `arg:"-S" help:"Generate one stream per audio file"`
 	TitleInLocal     bool     `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
-	TxtResults       bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
+	Txtresults       bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
 	Verbose          bool     `arg:"-v" help:"Verbose output"`
 	VerifyAudioURL   bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
 	YearMapFile      string   `arg:"-Y" help:"File containing 'id year' mappings. ID space YEAR"`
@@ -51,10 +49,6 @@ type args struct {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	go func() {
-            log.Println(http.ListenAndServe("localhost:6060", nil))
-        }()
 
 	args := new(args)
 
@@ -69,9 +63,14 @@ func main() {
 		log.Println("Wanted formats: ", args.Formats)
 	}
 
-	itemCache, err := ia.NewCache(args.CacheFile)
-	if err != nil {
-		log.Fatal(err)
+	var itemCache *ia.Cache 
+	itemCache = nil
+	
+	if args.Identifier == ""{
+		itemCache, err = ia.NewCache(args.CacheFile)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	var rejectFields map[string][]string
