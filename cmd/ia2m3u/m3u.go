@@ -49,6 +49,7 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U
 	}
 
 	for i := 0; i < len(tunes); i++ {
+		log.Println(i)
 		tuneFile := tunes[i]
 		rec := m3u.NewRecord()
 		// Tune title

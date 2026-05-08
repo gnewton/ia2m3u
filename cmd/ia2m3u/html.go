@@ -22,20 +22,20 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 	fmt.Println("")
 	fmt.Println("<tr bgcolor='eeeeee'>")
 
-	fmt.Printf("<td rowspan='%d' valign='top' align='right' width='5%%'>\n", len(wantedCopies)+1)
+	fmt.Printf("<td rowspan='%d' valign='top' align='right' width='15%%'>\n", len(wantedCopies)+1)
 
 	thumb := "https://" + item.D1 + item.Dir + "/" + Thumb
 
 	if has, jp2f := hasJP2ZipFile(item.Files, item.Metadata.Identifier); has {
 		// LP FRONT cover image
 		fmt.Println("<a title='Link to high resolution front cover' href=\"" + makeJP2ImageUrl(jp2f, item, "0") + "\">")
-		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
+		fmt.Println("<img width='160' align='left'   style='float: left;'    src='" + thumb + "' />")
 		fmt.Println("</a>")
 
 		// LP BACK cover image
 		jp2ImageUrl := makeJP2ImageUrl(jp2f, item, "1")
 		fmt.Println("<a title='Link to high resolution back cover' href=\"" + jp2ImageUrl + "\">")
-		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + jp2ImageUrl + "'>")
+		fmt.Println("<img width='160' align='left'   style='float: left;'    src='" + jp2ImageUrl + "' />")
 		fmt.Println("</a>")
 	} else {
 		// LP FRONT cover image
@@ -44,7 +44,7 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 		if frontCoverBigLink != "" {
 			fmt.Printf("<a  title='Link to high resolution front cover' href=\"%s\">\n", frontCoverBigLink)
 		}
-		fmt.Println("<img width=160 align='left'   style='float: left;'    src='" + thumb + "'>")
+		fmt.Println("<img width='160' align='left'   style='float: left;'    src='" + thumb + "' />")
 		if frontCoverBigLink != "" {
 			fmt.Println("</a>")
 		}
@@ -86,7 +86,7 @@ func simpleHTML(item *ia.ItemTopLevelMetadata, wantedCopies []*ia.File, verbose 
 		writeAudioFiles(wantedCopies, meta.Identifier, verbose)
 	}
 
-	fmt.Println("<tr   bgcolor='eeeeee'>  <td colspan='4'> <hr> </td> </tr>")
+	fmt.Println("<tr   bgcolor='eeeeee'>  <td colspan='4'> <hr /> </td> </tr>")
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("")
@@ -149,12 +149,12 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 				fmt.Println("<td bgcolor='eeeeee'  valign='top'>")
 			}
 
-			fmt.Println("      <audio controls>")
+			fmt.Println("      <audio controls='true'>")
 			//fmt.Print("        <source preload='none' src=\"")
 			fmt.Print("        <source src=\"")
 			fmt.Print(AudioFileBaseUrl + url.PathEscape(id) + "/" + url.PathEscape(f.Name))
 			fmt.Print("\"")
-			fmt.Print("'>")
+			fmt.Print(" />")
 			fmt.Println("        Your browser does not support the audio element.")
 			fmt.Println("      </audio>")
 

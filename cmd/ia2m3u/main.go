@@ -59,14 +59,16 @@ func main() {
 		log.Println(err)
 	}
 
+	m3uOut = true
+
 	if args.Verbose {
 		log.Println("Wanted formats: ", args.Formats)
 	}
 
-	var itemCache *ia.Cache 
+	var itemCache *ia.Cache
 	itemCache = nil
-	
-	if args.Identifier == ""{
+
+	if args.Identifier == "" {
 		itemCache, err = ia.NewCache(args.CacheFile)
 		if err != nil {
 			log.Fatal(err)
@@ -90,9 +92,9 @@ func main() {
 
 	client := ia.NewClient()
 
-
 	var m3 *m3u.M3U
 	if m3uOut {
+		log.Println("AAA")
 		m3 = new(m3u.M3U)
 	}
 
@@ -200,7 +202,7 @@ func main() {
 			for i := 0; i < len(results); i++ {
 				if int64(count) > offset {
 					id := results[i].Identifier
-					if args.Verbose && count%1000 == 0{
+					if args.Verbose && count%1000 == 0 {
 						log.Println(count, "Getting ", results[i].Identifier)
 					}
 					// Alreaded loaded in this session
@@ -215,7 +217,7 @@ func main() {
 					if item == nil {
 						continue
 					}
-					if ! args.CacheLoad{
+					if !args.CacheLoad {
 						loadedIDs[id] = struct{}{}
 						if len(item.Metadata.Identifier) == 0 {
 							log.Println("Missing identifier for results id=", id)
@@ -259,19 +261,23 @@ func main() {
 	}
 
 	if m3uOut {
-		file, err := os.Create(args.M3UFile)
+		log.Println("BBBBB")
+		//file, err := os.Create(args.M3UFile)
+		file, err := os.Create("playlist_ia.m3u")
 		if err != nil {
 			panic(err)
 		}
 		defer file.Close()
 
 		for i := 0; i < len(acceptedItems); i++ {
+			log.Println(i)
 			item := acceptedItems[i]
 			copies := collectCopies(item.Files)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder) // []*ia.File
 			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, m3, args.Random, args.LocalAudio)...)
 		}
+
 		w := bufio.NewWriter(file)
 
 		if err := m3.Write(w); err != nil {
