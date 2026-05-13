@@ -49,7 +49,6 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U
 	}
 
 	for i := 0; i < len(tunes); i++ {
-		log.Println(i)
 		tuneFile := tunes[i]
 		rec := m3u.NewRecord()
 		// Tune title
@@ -84,7 +83,6 @@ func makeRemoteAudioURL(id, filename string) string {
 func makeLocalAudioURL(id, hash, filename string, format string, n int) string {
 	Z := cleanString(strings.TrimSuffix(filename, filepath.Ext(filename)))
 
-	log.Println("345     |", cleanString(filename))
 	id = strings.TrimRight(id, ".")
 	suffix := "mp3"
 	subtype := ""

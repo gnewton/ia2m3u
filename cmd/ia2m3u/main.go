@@ -32,7 +32,7 @@ type args struct {
 	LocalAudio       bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
 	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file name. Default is {Metadata.Identifier}.m3u"`
 	MusicFilter      bool     `arg:"-M,--music" help:"Filter out non music. "`
-	Offset           int64    `arg:"-o,--offset" help:"Skit this number of results before starting limit count" default:"0"`
+	Offset           int64    `arg:"-o,--offset" help:"Offset (skip) this number of results before starting limit count" default:"0"`
 	Queries          []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random           bool     `arg:"-r" help:"Order of audio items in playlist is random"`
 	RejectFieldsFile string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
@@ -56,7 +56,7 @@ func main() {
 
 	m3uOut, err := args.check()
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 
 	m3uOut = true
@@ -94,7 +94,6 @@ func main() {
 
 	var m3 *m3u.M3U
 	if m3uOut {
-		log.Println("AAA")
 		m3 = new(m3u.M3U)
 	}
 
@@ -104,6 +103,7 @@ func main() {
 	if args.Verbose {
 		log.Println("   Offset", offset)
 		log.Println("   Limit", limit)
+
 	}
 
 	var acceptedItems []*ia.ItemTopLevelMetadata
@@ -261,7 +261,6 @@ func main() {
 	}
 
 	if m3uOut {
-		log.Println("BBBBB")
 		//file, err := os.Create(args.M3UFile)
 		file, err := os.Create("playlist_ia.m3u")
 		if err != nil {
@@ -270,7 +269,6 @@ func main() {
 		defer file.Close()
 
 		for i := 0; i < len(acceptedItems); i++ {
-			log.Println(i)
 			item := acceptedItems[i]
 			copies := collectCopies(item.Files)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
@@ -331,6 +329,8 @@ func main() {
 	if args.Verbose {
 		log.Println("Total items:", len(acceptedItems))
 		log.Println("Total tunes:", totalTunes)
+		hits, misses := ia.CacheStats()
+		log.Printf("Cache hit rate: %3.0f%%   %d %d", 100*float64(hits)/float64(hits+misses), hits, misses)
 	}
 }
 
