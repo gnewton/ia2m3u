@@ -320,7 +320,6 @@ func main() {
 			slices.SortFunc(wantedCopies, tunesByTrackOrder)
 			totalTunes += simpleHTML(acceptedItems[i], wantedCopies, args.Verbose)
 		}
-
 		fmt.Println("</table>")
 		fmt.Println("</body>")
 		fmt.Println("</html>")
