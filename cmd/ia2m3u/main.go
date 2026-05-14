@@ -19,6 +19,7 @@ import (
 )
 
 type args struct {
+	MinAudioLengthSeconds int64      `arg:"-t,--len" help:"Tracks less than this time in seconds are filtered out" default:"0"`
 	CacheFile        string   `arg:"-c,--cache-file" help:"Location of item JSON cache file" default:"cache_item.db"`
 	CacheLoad        bool     `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
 	Debug            bool     `arg:"-g" help:"Debug mode"`
@@ -277,7 +278,8 @@ func main() {
 
 		for i := 0; i < len(acceptedItems); i++ {
 			item := acceptedItems[i]
-			copies := collectCopies(item.Files)
+			//copies := collectCopies(item.Files)
+			copies := collectCopies(item.Files, args.MinAudioLengthSeconds)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder) // []*ia.File
 			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, m3, args.Random, args.LocalAudio)...)
@@ -323,7 +325,8 @@ func main() {
 		fmt.Println("<table  style='border-collapse: collapse;' cellpadding='5'>")
 
 		for i := 0; i < len(acceptedItems); i++ {
-			copies := collectCopies(acceptedItems[i].Files)
+			//copies := collectCopies(acceptedItems[i].Files)
+			copies := collectCopies(acceptedItems[i].Files, args.MinAudioLengthSeconds)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder)
 			totalTunes += simpleHTML(acceptedItems[i], wantedCopies, args.Verbose)

@@ -194,13 +194,17 @@ func makeFileTitle(title, name string, original []string, filenameTitle map[stri
 
 }
 
-func collectCopies(files []ia.File) map[string][]*ia.File {
+func collectCopies(files []ia.File, minAudioLengthSeconds int64) map[string][]*ia.File {
 	nameCopies := make(map[string][]*ia.File)
 
 	for i := 0; i < len(files); i++ {
 		f := files[i]
 
 		if _, ok := FileFormats[f.Format]; ok {
+			//if minAudioLengthFilterOut(f.Length, minAudioLengthSeconds){
+			if false{
+				//
+			}else{
 			// Assumes JSON ia.File ordering reflects track ordering. Might not be true for all
 			f.TrackOrder = i
 			baseName := makeFileBaseName(f.Name, f.Format)
@@ -212,7 +216,8 @@ func collectCopies(files []ia.File) map[string][]*ia.File {
 			} else {
 				copyFiles = append(copyFiles, &f)
 			}
-			nameCopies[baseName] = copyFiles
+							nameCopies[baseName] = copyFiles
+						}
 		}
 	}
 
