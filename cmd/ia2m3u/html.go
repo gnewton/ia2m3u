@@ -117,9 +117,9 @@ func writeAudioFiles(wantedCopies []*ia.File, id string, verbose bool) {
 			// COLUMN Track#
 
 			if i%2 == 0 {
-				fmt.Println("<td  width='2%'  valign='top' align='right'>")
+				fmt.Println("<td  width='5%'  valign='top' align='right'>")
 			} else {
-				fmt.Println("<td width='2%' bgcolor='eeeeee' valign='top'  align='right' >")
+				fmt.Println("<td width='5%' bgcolor='eeeeee' valign='top'  align='right' >")
 			}
 
 			if len(wantedCopies) > 1 {

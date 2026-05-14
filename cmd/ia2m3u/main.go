@@ -33,7 +33,7 @@ type args struct {
 	M3UFile          string   `arg:"-m,--m3u_file" help:"m3u file name. Default is {Metadata.Identifier}.m3u"`
 	MusicFilter      bool     `arg:"-M,--music" help:"Filter out non music. "`
 	Offset           int64    `arg:"-o,--offset" help:"Offset (skip) this number of results before starting limit count" default:"0"`
-	Queries          []string `arg:"-q,--query" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
+	Queries          []string `arg:"-q,--query,separate" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random           bool     `arg:"-r" help:"Order of audio items in playlist is random"`
 	RejectFieldsFile string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
 	RejectIDFile     string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
@@ -155,9 +155,16 @@ func main() {
 	}
 
 	for _, query := range args.Queries {
+		if args.Verbose {
+			log.Println("----QQQQQQQQQQQQQQQQQQQQQQQQQQQQQ------------------------------")
+			log.Println(query)
+			log.Println("---------------------------------------------------------------")
+		}
+
 		if args.MusicFilter {
 			query = applyMusicFilter(query)
 		}
+		query = query + NotRestrictedItemsClause
 		query = "q=" + escapeQuery(query)
 
 		search := ia.Search{
@@ -293,12 +300,13 @@ func main() {
 
 	if args.HTMLResults {
 		fmt.Println("<html>")
-		fmt.Println()
+
 		for i := 0; i < len(args.Queries); i++ {
 			query := args.Queries[i]
 			if args.MusicFilter {
 				query = applyMusicFilter(query)
 			}
+			fmt.Printf("<!-- CMD %s     -->\n", os.Args)
 			query = "q=" + escapeQuery(query)
 
 			fmt.Printf("<!-- Query %d = [%s]  -->\n", i+1, query)
