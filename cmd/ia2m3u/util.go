@@ -127,6 +127,11 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 			log.Printf("  ----- Download URL: %s   to local file: %s\n", downloadUrls[i].remoteUrl, downloadUrls[i].localFilename)
 		}
 		lfilename := downloadUrls[i].localFilename
+		if len(lfilename) > 254{
+			log.Println("Filename too long", downloadUrls[i].MD5)
+			return fmt.Errorf("Filename too long=%d   [%s]", len(lfilename), lfilename)
+		}
+		
 		// Create the file
 		if checkFileExists(lfilename) {
 			if verbose {

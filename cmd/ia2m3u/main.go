@@ -156,7 +156,7 @@ func main() {
 	}
 
 	queries := args.Queries
-	if len(queries) == 0{
+	if len(queries) == 0 && args.CacheLoad{
 		queries = []string{
 			AUDIOQUERY,
 		}
@@ -315,7 +315,14 @@ func main() {
 		}
 	}
 
+	if args.Verbose{
+		log.Println("Output: HTML", args.HTMLResults)
+	}
+	
 	if args.HTMLResults {
+		if args.Verbose{
+			log.Println("Output: HTML")
+		}
 		fmt.Println("<html>")
 
 		for i := 0; i < len(args.Queries); i++ {
