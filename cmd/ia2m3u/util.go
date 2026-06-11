@@ -48,20 +48,27 @@ func (a *args) check() (bool, error) {
 		log.Fatal("Start year must be less than end year")
 	}
 
-	if  a.CacheLoad {
+	if a.CacheLoad {
 		m3uOut = false
 	}
-
-	a.M3UFile = a.Identifier + ".m3u"
-
-	for i := 0; i < len(a.Queries); i++ {
-		if len(a.Queries[i]) == 0 {
-			a.Queries[i] = AUDIOQUERY
-		} else {
-			a.Queries[i] = a.Queries[i] + SPACE_AND + AUDIOQUERY
-		}
+	//
+	if len(a.Identifier) > 0 {
+		a.M3UFile = a.Identifier + ".m3u"
 	}
 
+	if len(a.Queries) == 0 {
+		a.Queries = []string{
+			AUDIOQUERY,
+		}
+	} else {
+		for i := 0; i < len(a.Queries); i++ {
+			if len(a.Queries[i]) == 0 {
+				a.Queries[i] = AUDIOQUERY
+			} else {
+				a.Queries[i] = a.Queries[i] + SPACE_AND + AUDIOQUERY
+			}
+		}
+	}
 	return m3uOut, nil
 }
 
@@ -127,11 +134,11 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 			log.Printf("  ----- Download URL: %s   to local file: %s\n", downloadUrls[i].remoteUrl, downloadUrls[i].localFilename)
 		}
 		lfilename := downloadUrls[i].localFilename
-		if len(lfilename) > 254{
+		if len(lfilename) > 254 {
 			log.Println("Filename too long", downloadUrls[i].MD5)
 			return fmt.Errorf("Filename too long=%d   [%s]", len(lfilename), lfilename)
 		}
-		
+
 		// Create the file
 		if checkFileExists(lfilename) {
 			if verbose {
@@ -225,7 +232,7 @@ func processItem(acceptedItems *[]*ia.ItemTopLevelMetadata, item *ia.ItemTopLeve
 		log.Println("HandleItem:", count, "-", item.Metadata.Identifier)
 	}
 
-	if !cacheLoad{
+	if !cacheLoad {
 		if rejectByField(&item.Metadata, rejectFields, args.Verbose) {
 			if args.Verbose {
 				log.Println("Rejected by field")
@@ -339,7 +346,7 @@ func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[strin
 		if item == nil {
 			continue
 		}
-		if !cacheLoad{
+		if !cacheLoad {
 			loadedIDs[id] = struct{}{}
 		}
 
@@ -421,4 +428,10 @@ func makeStrm(item *ia.ItemTopLevelMetadata, tunes []*ia.File) {
 		makeRemoteAudioURL(item.Metadata.Identifier, tuneFile.Name) // Local
 	}
 
+}
+
+func logV(v bool, s string) {
+	if v {
+		log.Println(s)
+	}
 }
