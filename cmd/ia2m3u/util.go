@@ -79,11 +79,22 @@ func makeTitle(titles []string) string {
 	return titles[0]
 }
 
+
 func makeTitleCreator(titles, creators []string) (string, string) {
 
 	creator := "?"
 	if len(creators) != 0 && creators[0] != "" {
-		creator = creators[0]
+		creator = ""
+		l := len(creators)
+		if l > 2{
+			l = 2
+		}
+		for i:=0; i<l; i++{
+			if i > 0{
+				creator += creator + "; "
+			}
+			creator  += creators[i]
+		}
 	}
 
 	title := "?"
