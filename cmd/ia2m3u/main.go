@@ -19,33 +19,35 @@ import (
 )
 
 type args struct {
-	MinAudioLengthSeconds int64    `arg:"-t,--len" help:"Tracks less than this time in seconds are filtered out" default:"0"`
-	CacheFile             string   `arg:"-c,--cache-file" help:"Location of item JSON cache file" default:"cache_item.db"`
-	CacheLoad             bool     `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
-	Debug                 bool     `arg:"-g" help:"Debug mode"`
-	Dedup                 bool     `arg:"-D" help:"Deduplicate: Use Year, Title and Creator to decide if is a duplicate."`
-	Dir                   string   `arg:"-d,--dir" help:"Directory to write files (and audio if -L)" default:"./"`
-	Formats               string   `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'MPEG-4 Audio','Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
-	HTMLResults           bool     `arg:"-H,--simplehtml" help:"Produce simple HTML output to stdout. Does not produce any m3u output"`
-	Identifier            string   `arg:"-i,--id" help:"Single archive.org identifier to download"`
-	IncludeIDFile         string   `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
-	Limit                 int64    `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
-	LocalAudio            bool     `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
-	M3UFile               string   `arg:"-m,--m3u_file" help:"m3u file name. Default is {Metadata.Identifier}.m3u" default:"ia_playlist.m3u"`
-	MusicFilter           bool     `arg:"-M,--music" help:"Filter out non music. "`
-	Offset                int64    `arg:"-o,--offset" help:"Offset (skip) this number of results before starting limit count" default:"0"`
-	Queries               []string `arg:"-q,--query,separate" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
-	Random                bool     `arg:"-r" help:"Order of audio items in playlist is random"`
-	RejectFieldsFile      string   `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
-	RejectIDFile          string   `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
-	Smallest              bool     `arg:"-s" help:"Select the smallest sized audio file"`
-	Strm                  bool     `arg:"-S" help:"Generate one stream per audio file"`
-	TitleInLocal          bool     `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
-	Txtresults            bool     `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
-	Verbose               bool     `arg:"-v" help:"Verbose output"`
-	VerifyAudioURL        bool     `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
-	YearMapFile           string   `arg:"-Y" help:"File containing 'id year' mappings. ID space YEAR"`
-	Years                 []int    `arg:"-y" help:"Limit by year range. Two year values, start end (inclusive). i.e. -y 1980 1990"`
+	AccessLevel           AccessLevels `arg:"-A" help:"0 - Unrestricted only;  1 - All;   2 - Restricted only.  Internet archive metadata: access-restricted-item. See https://help.archive.org/help/downloading-a-basic-guide/" default:"0"`
+	MinAudioLengthSeconds int64        `arg:"-t,--len" help:"Tracks less than this time in seconds are filtered out" default:"0"`
+	CacheFile             string       `arg:"-c,--cache-file" help:"Location of item JSON cache file" default:"cache_item.db"`
+	CacheLoad             bool         `arg:"-C,--cache" help:"Run query to load cache; Does not produce any m3u output"`
+	Debug                 bool         `arg:"-g" help:"Debug mode"`
+	Dedup                 bool         `arg:"-D" help:"Deduplicate: Use Year, Title and Creator to decide if is a duplicate."`
+	Dir                   string       `arg:"-d,--dir" help:"Directory to write files (and audio if -L)" default:"./"`
+	Formats               string       `arg:"-f,--formats" help:"Comma separated list of formats in order of preference. Possible values: 'MP3', 'VBR MP3', '128Kbps MP3', '64Kbps MP3', 'MPEG-4 Audio','Ogg Vorbis', 'WAVE', 'Flac', 'AIFF'. 'VBR MP3' is always appended to supplied list."`
+	HTMLResults           bool         `arg:"-H,--simplehtml" help:"Produce simple HTML output to stdout. Does not produce any m3u output"`
+	Identifier            string       `arg:"-i,--id" help:"Single archive.org identifier to download"`
+	IncludeIDFile         string       `arg:"-I,--include" help:"Filename containing one ID per line that is added to the results"`
+	Limit                 int64        `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
+	LocalAudio            bool         `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
+	M3UFile               string       `arg:"-m,--m3u_file" help:"m3u file name. Default is {Metadata.Identifier}.m3u" default:"ia_playlist.m3u"`
+	MusicFilter           bool         `arg:"-M,--music" help:"Filter out non music. "`
+	Offset                int64        `arg:"-o,--offset" help:"Offset (skip) this number of results before starting limit count" default:"0"`
+	Queries               []string     `arg:"-q,--query,separate" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
+	Random                bool         `arg:"-r" help:"Order of audio items in playlist is random"`
+
+	RejectFieldsFile string `arg:"-F,--rejectfields" help:"Filename containing json map of fieldname1:[value1, value2], fieldname2:[value2, value3]; Fields matching these values are rejected. All strings."`
+	RejectIDFile     string `arg:"-R,--rejectids" help:"Filename containing one ID per line that is rejected"`
+	Smallest         bool   `arg:"-s" help:"Select the smallest sized audio file"`
+	Strm             bool   `arg:"-S" help:"Generate one stream per audio file"`
+	TitleInLocal     bool   `arg:"-T,--title_in_local" help:"Add the title to the local audio filename. Note can result in very long filenames, some that may be too long for some OSes and/or filestystems."`
+	Txtresults       bool   `arg:"-O,--Outputresults" help:"Run query and write results (title, artist, ID) to stdout. Does not produce any m3u output"`
+	Verbose          bool   `arg:"-v" help:"Verbose output"`
+	VerifyAudioURL   bool   `arg:"-U" help:"Verifies the URL of the audio file by doing an http HEAD request on the URL"`
+	YearMapFile      string `arg:"-Y" help:"File containing 'id year' mappings. ID space YEAR"`
+	Years            []int  `arg:"-y" help:"Limit by year range. Two year values, start end (inclusive). i.e. -y 1980 1990"`
 }
 
 func main() {
@@ -172,7 +174,15 @@ func main() {
 		if args.MusicFilter {
 			query = applyMusicFilter(query)
 		}
-		query = query + NotRestrictedItemsClause
+
+		switch args.AccessLevel {
+		case Access_NonRestricted:
+			query = query + OnlyNonRestrictedItems_Clause
+		case Access_Restricted:
+			query = query + OnlyRestrictedItems_Clause
+		case Access_All:
+		}
+
 		query = "q=" + escapeQuery(query)
 
 		search := ia.Search{

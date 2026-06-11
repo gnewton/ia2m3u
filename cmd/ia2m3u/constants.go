@@ -34,7 +34,16 @@ const OGG_SUFFIX = ".ogg"
 const VBR_MP3_SUFFIX = "_vbr.mp3"
 const MPEG_4_SUFFIX = ".m4a"
 
-const NotRestrictedItemsClause = " AND -access-restricted-item:(true) "
+type AccessLevels int
+
+const (
+	Access_NonRestricted AccessLevels = iota
+	Access_All
+	Access_Restricted
+)
+
+const OnlyNonRestrictedItems_Clause = " AND -access-restricted-item:(true) "
+const OnlyRestrictedItems_Clause = " AND access-restricted-item:(true) "
 
 var FileFormats = map[string]string{
 	MP3_256Kbps: MP3_256Kbps_SUFFIX,
