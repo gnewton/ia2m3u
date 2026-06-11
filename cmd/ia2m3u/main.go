@@ -155,8 +155,15 @@ func main() {
 		}
 	}
 
-	for _, query := range args.Queries {
-		if args.Verbose {
+	queries := args.Queries
+	if len(queries) == 0 && args.CacheLoad{
+		queries = []string{
+			AUDIOQUERY,
+		}
+	}
+		
+	for _, query := range queries {
+		if args.Verbose || args.CacheLoad{
 			log.Println("----QQQQQQQQQQQQQQQQQQQQQQQQQQQQQ------------------------------")
 			log.Println(query)
 			log.Println("---------------------------------------------------------------")
@@ -167,17 +174,18 @@ func main() {
 		}
 		query = query + NotRestrictedItemsClause
 		query = "q=" + escapeQuery(query)
+		
 
 		search := ia.Search{
 			Query:      query,
 			Client:     client,
-			ChunkSize:  5000,
+			ChunkSize:  3001,
 			MaxResults: math.MaxInt64,
 			Retries:    5,
 			Verbose:    args.Verbose,
 		}
 
-		if args.Verbose {
+		if args.Verbose  || args.CacheLoad {
 			log.Println("Query=", query)
 		}
 
@@ -199,6 +207,9 @@ func main() {
 			results, err := search.Execute()
 			if err != nil {
 				log.Fatal(err)
+			}
+			if args.CacheLoad{
+				log.Println("Next cursor")
 			}
 			if results == nil {
 				if args.Verbose {
@@ -225,7 +236,11 @@ func main() {
 					if item == nil {
 						continue
 					}
-					if !args.CacheLoad {
+					if args.CacheLoad {
+						if count%1000 == 0{
+							log.Println(count, id)
+						}
+					}else{
 						loadedIDs[id] = struct{}{}
 						if len(item.Metadata.Identifier) == 0 {
 							log.Println("Missing identifier for results id=", id)
@@ -300,7 +315,14 @@ func main() {
 		}
 	}
 
+	if args.Verbose{
+		log.Println("Output: HTML", args.HTMLResults)
+	}
+	
 	if args.HTMLResults {
+		if args.Verbose{
+			log.Println("Output: HTML")
+		}
 		fmt.Println("<html>")
 
 		for i := 0; i < len(args.Queries); i++ {

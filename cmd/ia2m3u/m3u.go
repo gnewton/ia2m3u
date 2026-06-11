@@ -24,6 +24,7 @@ func m3uOut(title, url string) *m3u.Record {
 type DownloadAudio struct {
 	localFilename string
 	remoteUrl     string
+	MD5 string
 }
 
 type FileFormat struct {
@@ -68,6 +69,7 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U
 			download = append(download, DownloadAudio{
 				localFilename: rec.URL,
 				remoteUrl:     makeRemoteAudioURL(item.Metadata.Identifier, tuneFile.Name),
+				MD5: tuneFile.MD5,
 			})
 		}
 		m3.Add(rec)
@@ -81,6 +83,7 @@ func makeRemoteAudioURL(id, filename string) string {
 }
 
 func makeLocalAudioURL(id, hash, filename string, format string, n int) string {
+	log.Println("makeLocalAudioURL ********", id, "|",hash, "|",filename)
 	Z := cleanString(strings.TrimSuffix(filename, filepath.Ext(filename)))
 
 	id = strings.TrimRight(id, ".")
@@ -107,8 +110,13 @@ func makeLocalAudioURL(id, hash, filename string, format string, n int) string {
 		number = "0"
 	}
 	number = number + strconv.Itoa(n)
-	//return id + "_" + number + "_" + hash[len(hash)-8:] + "_" + subtype + "." + suffix
-	return id + "__" + number + "_" + Z + "_" + hash[len(hash)-4:] + subtype + "." + suffix
+
+	part := id + "__" + number + "_" + Z 
+	if len(part) > 235{
+		part = part[0:235]
+	}
+
+	return part + "_" + hash[len(hash)-4:] + subtype + "." + suffix
 }
 
 func addAll(m3 *m3u.M3U, records []*m3u.Record) {
