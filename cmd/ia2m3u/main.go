@@ -33,7 +33,8 @@ type args struct {
 	Limit                 int64        `arg:"-l,--limit" help:"Limit the results to this number" default:"9223372036854775807"`
 	LocalAudio            bool         `arg:"-L,--local" help:"m3u references sound files which are downloaded and stored in -d directory"`
 	M3UFile               string       `arg:"-m,--m3u_file" help:"m3u file name. Default is {Metadata.Identifier}.m3u" default:"ia_playlist.m3u"`
-	MusicFilter           bool         `arg:"-M,--music" help:"Filter out non music. "`
+	M3UPerHit             bool         `arg:"-U,--unique" help:"Generate an M3U playlist per ID."`
+	MusicFilter           bool         `arg:"-M,--music" help:"Filter out non music. Imperfect."`
 	Offset                int64        `arg:"-o,--offset" help:"Offset (skip) this number of results before starting limit count" default:"0"`
 	Queries               []string     `arg:"-q,--query,separate" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random                bool         `arg:"-r" help:"Order of audio items in playlist is random"`
@@ -66,7 +67,9 @@ func main() {
 
 	if args.Verbose {
 		log.Println("Wanted formats: ", args.Formats)
+		log.Println("M3UPerHit:", args.M3UPerHit)
 	}
+	log.Println("M3UPerHit:", args.M3UPerHit)
 
 	var itemCache *ia.Cache
 	itemCache = nil
@@ -295,28 +298,47 @@ func main() {
 	if m3uOut {
 		logV(args.Verbose, "M3U file: "+args.M3UFile)
 
-		file, err := os.Create(args.M3UFile)
+		m3uFile, err := os.Create(args.M3UFile)
 		//file, err := os.Create("playlist_ia.m3u")
 		if err != nil {
 			panic(err)
 		}
-		defer file.Close()
+		defer m3uFile.Close()
 
+		var thisM3 *m3u.M3U
 		for i := 0; i < len(acceptedItems); i++ {
 			item := acceptedItems[i]
-			//copies := collectCopies(item.Files)
+			if args.M3UPerHit {
+				thisM3 = new(m3u.M3U)
+				m3uFile, err = os.Create(item.Metadata.Identifier + ".m3u")
+				if err != nil {
+					panic(err)
+				}
+			} else {
+				thisM3 = m3
+			}
+
 			copies := collectCopies(item.Files, args.MinAudioLengthSeconds)
 			wantedCopies := findWantedCopies(copies, wantedFormats)
 			slices.SortFunc(wantedCopies, tunesByTrackOrder) // []*ia.File
-			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, m3, args.Random, args.LocalAudio)...)
+			dlAudio = append(dlAudio, makeM3UEntries(item, wantedCopies, thisM3, args.Random, args.LocalAudio)...)
+			if args.M3UPerHit {
+				w := bufio.NewWriter(m3uFile)
+				if err := thisM3.Write(w); err != nil {
+					log.Fatal(err)
+				}
+				w.Flush()
+				m3uFile.Close()
+			}
 		}
 
-		w := bufio.NewWriter(file)
-
-		if err := m3.Write(w); err != nil {
-			log.Fatal(err)
+		if !args.M3UPerHit {
+			w := bufio.NewWriter(m3uFile)
+			if err := m3.Write(w); err != nil {
+				log.Fatal(err)
+			}
+			w.Flush()
 		}
-		w.Flush()
 
 		if args.LocalAudio {
 			err = downloadAudio(dlAudio, args.Verbose)
