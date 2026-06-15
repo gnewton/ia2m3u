@@ -1,8 +1,8 @@
-* Make M3U playlists from Internet Archive audio collection
+# Make M3U playlists from Internet Archive audio collection
 
 
 
-* CLI
+# CLI
 
 ```
 $ ./ia2m3u --help
