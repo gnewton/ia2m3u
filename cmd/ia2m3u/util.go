@@ -56,19 +56,6 @@ func (a *args) check() (bool, error) {
 		a.M3UFile = a.Identifier + ".m3u"
 	}
 
-	if len(a.Queries) == 0 {
-		a.Queries = []string{
-			AUDIOQUERY,
-		}
-	} else {
-		for i := 0; i < len(a.Queries); i++ {
-			if len(a.Queries[i]) == 0 {
-				a.Queries[i] = AUDIOQUERY
-			} else {
-				a.Queries[i] = a.Queries[i] + SPACE_AND + AUDIOQUERY
-			}
-		}
-	}
 	return m3uOut, nil
 }
 
@@ -79,21 +66,20 @@ func makeTitle(titles []string) string {
 	return titles[0]
 }
 
-
 func makeTitleCreator(titles, creators []string) (string, string) {
 
 	creator := "?"
 	if len(creators) != 0 && creators[0] != "" {
 		creator = ""
 		l := len(creators)
-		if l > 2{
+		if l > 2 {
 			l = 2
 		}
-		for i:=0; i<l; i++{
-			if i > 0{
+		for i := 0; i < l; i++ {
+			if i > 0 {
 				creator += creator + "; "
 			}
-			creator  += creators[i]
+			creator += creators[i]
 		}
 	}
 
@@ -334,13 +320,16 @@ func loadIDYear(filename string) map[string]int {
 	return idYear
 }
 
-func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, cacheLoad bool) error {
+func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[string]struct{}, args *args, client *http.Client, itemCache *ia.Cache, m3 *m3u.M3U, m3uOut bool, cacheLoad, verbose bool) error {
 	ids, err := loadIncludeIDs(args.IncludeIDFile)
 	if err != nil {
 		return err
 	}
 	for i := 0; i < len(ids); i++ {
 		id := ids[i]
+		if verbose {
+			log.Println(id)
+		}
 		if len(id) == 0 || id[0] == '#' {
 			continue
 		}

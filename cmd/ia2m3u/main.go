@@ -35,7 +35,7 @@ type args struct {
 	M3UFile               string       `arg:"-m,--m3u_file" help:"m3u file name. Default is {Metadata.Identifier}.m3u" default:"ia_playlist.m3u"`
 	M3UPerHit             bool         `arg:"-U,--unique" help:"Generate an M3U playlist per ID."`
 	MusicFilter           bool         `arg:"-M,--music" help:"Filter out non music. Imperfect."`
-	Offset                int64        `arg:"-o,--offset" help:"Offset (skip) this number of results before starting limit count" default:"0"`
+	Offset                int64        `arg:"-o,--offset" help:"Offset (skip) this number of results befiesre starting limit count" default:"0"`
 	Queries               []string     `arg:"-q,--query,separate" help:"The query to run. See https://archive.org/advancedsearch.php for query syntax. Must be URL encoded (i.e. spaces must be %20, equals (\"=\") should be %30, etc. Note %20AND%20mediatype%3A(audio) is appended to query to limit to audio formats"` // Change to queries: Queries  []string `arg:"-q,separate"` see https://github.com/alexflint/go-arg
 	Random                bool         `arg:"-r" help:"Order of audio items in playlist is random"`
 
@@ -120,7 +120,7 @@ func main() {
 		if args.Verbose {
 			log.Println("Loading extras", args.IncludeIDFile)
 		}
-		err := loadExtraIDs(&acceptedItems, loadedIDs, args, client, itemCache, m3, m3uOut, args.CacheLoad)
+		err := loadExtraIDs(&acceptedItems, loadedIDs, args, client, itemCache, m3, m3uOut, args.CacheLoad, args.Verbose)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -160,128 +160,154 @@ func main() {
 		}
 	}
 
-	queries := args.Queries
-	if len(queries) == 0 && args.CacheLoad {
-		queries = []string{
-			AUDIOQUERY,
-		}
+	if args.Verbose {
+		log.Println("Query")
 	}
 
-	for _, query := range queries {
-		if args.Verbose || args.CacheLoad {
-			log.Println("----QQQQQQQQQQQQQQQQQQQQQQQQQQQQQ------------------------------")
-			log.Println(query)
-			log.Println("---------------------------------------------------------------")
-		}
+	queries := args.Queries
 
-		if args.MusicFilter {
-			query = applyMusicFilter(query)
-		}
+	log.Println(queries)
+	log.Println(len(queries))
+	log.Println(len(queries) == 0 && args.CacheLoad)
+	log.Println(len(queries) > 0 || (len(queries) == 0 && args.CacheLoad))
 
-		switch args.AccessLevel {
-		case Access_NonRestricted:
-			query = query + OnlyNonRestrictedItems_Clause
-		case Access_Restricted:
-			query = query + OnlyRestrictedItems_Clause
-		case Access_All:
-		}
-
-		query = "q=" + escapeQuery(query)
-
-		search := ia.Search{
-			Query:      query,
-			Client:     client,
-			ChunkSize:  3001,
-			MaxResults: math.MaxInt64,
-			Retries:    5,
-			Verbose:    args.Verbose,
-		}
-
-		if args.Verbose || args.CacheLoad {
-			log.Println("Query=", query)
-		}
-
-		total, err := search.Total()
-		if err != nil {
-			log.Fatal(err)
-		}
-		if args.Verbose {
-			log.Println("")
-			log.Printf("---- Search total: %d        query: %s\n", total, query)
-		}
-
-		var count int = 0
-		stop := false
-		for {
-			if stop {
-				break
+	if len(queries) > 0 || (len(queries) == 0 && args.CacheLoad) {
+		if len(args.Queries) == 0 {
+			args.Queries = []string{
+				AUDIOQUERY,
 			}
-			results, err := search.Execute()
+		} else {
+			for i := 0; i < len(args.Queries); i++ {
+				if len(args.Queries[i]) == 0 {
+					args.Queries[i] = AUDIOQUERY
+				} else {
+					args.Queries[i] = args.Queries[i] + SPACE_AND + AUDIOQUERY
+				}
+			}
+		}
+		log.Println("MMMMMMMMMMMMMMMMMMMMMMMMMMMMM")
+
+		if len(queries) == 0 && args.CacheLoad {
+			queries = []string{
+				AUDIOQUERY,
+			}
+		}
+
+		for _, query := range queries {
+			if args.Verbose || args.CacheLoad {
+				log.Println("----QQQQQQQQQQQQQQQQQQQQQQQQQQQQQ------------------------------")
+				log.Println(query)
+				log.Println("---------------------------------------------------------------")
+			}
+
+			if args.MusicFilter {
+				query = applyMusicFilter(query)
+			}
+
+			switch args.AccessLevel {
+			case Access_NonRestricted:
+				query = query + OnlyNonRestrictedItems_Clause
+			case Access_Restricted:
+				query = query + OnlyRestrictedItems_Clause
+			case Access_All:
+			}
+
+			query = "q=" + escapeQuery(query)
+
+			search := ia.Search{
+				Query:      query,
+				Client:     client,
+				ChunkSize:  3001,
+				MaxResults: math.MaxInt64,
+				Retries:    5,
+				Verbose:    args.Verbose,
+			}
+
+			if args.Verbose || args.CacheLoad {
+				log.Println("Query=", query)
+			}
+
+			total, err := search.Total()
 			if err != nil {
 				log.Fatal(err)
 			}
-			if args.CacheLoad {
-				log.Println("Next cursor")
+			if args.Verbose {
+				log.Println("")
+				log.Printf("---- Search total: %d        query: %s\n", total, query)
 			}
-			if results == nil {
-				if args.Verbose {
-					log.Println("End results")
+
+			var count int = 0
+			stop := false
+			for {
+				if stop {
+					break
 				}
-				break
-			}
+				results, err := search.Execute()
+				if err != nil {
+					log.Fatal(err)
+				}
+				if args.CacheLoad {
+					log.Println("Next cursor")
+				}
+				if results == nil {
+					if args.Verbose {
+						log.Println("End results")
+					}
+					break
+				}
 
-			for i := 0; i < len(results); i++ {
-				if int64(count) > offset {
-					id := results[i].Identifier
-					if args.Verbose && count%1000 == 0 {
-						log.Println(count, "Getting ", results[i].Identifier)
-					}
-					// Alreaded loaded in this session
-					if _, ok := loadedIDs[id]; ok {
-						continue
-					}
-
-					item, err := ia.GetItem(id, client, itemCache, args.Verbose)
-					if err != nil {
-						log.Println(err)
-					}
-					if item == nil {
-						continue
-					}
-					if args.CacheLoad {
-						if count%1000 == 0 {
-							log.Println(count, id)
+				for i := 0; i < len(results); i++ {
+					if int64(count) > offset {
+						id := results[i].Identifier
+						if args.Verbose && count%1000 == 0 {
+							log.Println(count, "Getting ", results[i].Identifier)
 						}
-					} else {
-						loadedIDs[id] = struct{}{}
-						if len(item.Metadata.Identifier) == 0 {
-							log.Println("Missing identifier for results id=", id)
-							log.Println(item)
+						// Alreaded loaded in this session
+						if _, ok := loadedIDs[id]; ok {
 							continue
 						}
 
+						item, err := ia.GetItem(id, client, itemCache, args.Verbose)
 						if err != nil {
-							log.Fatal(err)
+							log.Println(err)
 						}
 						if item == nil {
 							continue
 						}
-						err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, count, args.CacheLoad)
-						if err != nil {
-							log.Fatal(err)
+						if args.CacheLoad {
+							if count%1000 == 0 {
+								log.Println(count, id)
+							}
+						} else {
+							loadedIDs[id] = struct{}{}
+							if len(item.Metadata.Identifier) == 0 {
+								log.Println("Missing identifier for results id=", id)
+								log.Println(item)
+								continue
+							}
+
+							if err != nil {
+								log.Fatal(err)
+							}
+							if item == nil {
+								continue
+							}
+							err = processItem(&acceptedItems, item, args, client, itemCache, m3, m3uOut, rejectFields, count, args.CacheLoad)
+							if err != nil {
+								log.Fatal(err)
+							}
 						}
 					}
-				}
 
-				count++
-				if int64(count) > offset+limit {
-					stop = true
-					break
+					count++
+					if int64(count) > offset+limit {
+						stop = true
+						break
+					}
 				}
 			}
 		}
 	}
-
 	var totalTunes = 0
 	wantedFormats := makePreferredFormats(args.Formats)
 	var dlAudio []DownloadAudio
