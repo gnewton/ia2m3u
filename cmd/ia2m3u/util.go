@@ -149,6 +149,7 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 			// get the size
 			if fi.Size() > 0 {
 				// Actually, should to an HTTP HEAD on the file and compare file sizes...
+				downloadUrls[i].DownloadFailed = true
 				continue
 
 			} else {
@@ -173,13 +174,17 @@ func downloadAudio(downloadUrls []DownloadAudio, verbose bool) error {
 		resp, err := http.Get(downloadUrls[i].remoteUrl)
 		if err != nil {
 			log.Println("http get error")
-			return err
+			downloadUrls[i].DownloadFailed = true
+			continue
 		}
 		defer resp.Body.Close()
 
 		// Check server response
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("Bad HTTP status code: %s", resp.Status)
+			downloadUrls[i].DownloadFailed = true
+			log.Printf("Bad HTTP status code: %s\n", resp.Status)
+			continue
+
 		}
 
 		// Writer the body to file
@@ -340,7 +345,8 @@ func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[strin
 
 		item, err := ia.GetItem(ids[i], client, itemCache, args.Verbose)
 		if err != nil {
-			return err
+			log.Println(err)
+			continue
 		}
 
 		if item == nil {
@@ -353,7 +359,7 @@ func loadExtraIDs(acceptedItems *[]*ia.ItemTopLevelMetadata, loadedIDs map[strin
 		err = processItem(acceptedItems, item, args, client, itemCache, m3, m3uOut, nil, 0, cacheLoad)
 
 		if err != nil {
-			return err
+			log.Println(err)
 		}
 
 	}

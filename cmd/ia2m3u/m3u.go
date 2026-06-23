@@ -25,6 +25,7 @@ type DownloadAudio struct {
 	localFilename string
 	remoteUrl     string
 	MD5 string
+	DownloadFailed bool
 }
 
 type FileFormat struct {
@@ -58,7 +59,8 @@ func makeM3UEntries(item *ia.ItemTopLevelMetadata, tunes []*ia.File, m3 *m3u.M3U
 		} else {
 			rec.Title = "[Title unknown]"
 		}
-		rec.Title = year + " - " + creator + title + " -- " + rec.Title
+		
+		rec.Title = creator + title + " -- " +  year +" -" + rec.Title
 		if local {
 			rec.URL = makeLocalAudioURL(item.Metadata.Identifier, tuneFile.MD5, tuneFile.Name, tuneFile.Format, i) // Local
 		} else {
