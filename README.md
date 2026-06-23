@@ -1,5 +1,15 @@
 # Make M3U playlists from Internet Archive audio collection
 
+ia2m3u allows you to create M3U playlists that reference tracks that are hosted at the Internet Archive (IA).
+You can create these from any of the following:
+1. Queries of the IA metadata [-q]
+2. List: Text file with one IA identifier per line (include list) [-I]
+Multiple queries can be used at the same time, and queries and an include list can also be used.
+
+Metadata is cached across queries, reducing network bandwidth and load on the IA servers.
+
+An 
+
 
 
 # CLI
