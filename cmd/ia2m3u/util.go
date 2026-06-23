@@ -448,6 +448,10 @@ func audioLengthTooShort(lengthAsString string, minAudioLengthSeconds int64) boo
 }
 
 func stringToAudioLengthInSeconds(l string) int64 {
+	if len(l) == 0 {
+		return 0
+	}
+
 	// 4532
 	if i, err := strconv.ParseInt(l, 10, 64); err == nil {
 		return i
@@ -470,7 +474,7 @@ func stringToAudioLengthInSeconds(l string) int64 {
 		}
 	}
 
-	// 4m5s
+	// 4m5s  ???
 	return 0
 
 }
