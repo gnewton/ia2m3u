@@ -60,14 +60,15 @@ var FileFormats = map[string]string{
 var musicFilter map[string][]string = map[string][]string{
 	"subject": []string{
 		"Comedy",
+		"Education",
 		"Interview",
 		"Monolog",
 		"Non-Music",
 		"Novelty",
 		"Podcast",
 		"Poem",
-		"Spoken Word",
 		"Radio Program",
+		"Spoken Word",
 		"Verse",
 		"ballad",
 		"interviews",

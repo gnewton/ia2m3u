@@ -59,6 +59,13 @@ func (a *args) check() (bool, error) {
 	return m3uOut, nil
 }
 
+func printMusicFilterList() {
+	fmt.Println("Music filter list:")
+	for field, value := range musicFilter {
+		fmt.Printf("\tField: %s: %s\n", field, value)
+	}
+}
+
 func makeTitle(titles []string) string {
 	if len(titles) == 0 {
 		return "[Title unknown]"
@@ -434,4 +441,36 @@ func logV(v bool, s string) {
 	if v {
 		log.Println(s)
 	}
+}
+
+func audioLengthTooShort(lengthAsString string, minAudioLengthSeconds int64) bool {
+	return stringToAudioLengthInSeconds(lengthAsString) > minAudioLengthSeconds
+}
+
+func stringToAudioLengthInSeconds(l string) int64 {
+	// 4532
+	if i, err := strconv.ParseInt(l, 10, 64); err == nil {
+		return i
+	}
+
+	// 44.5
+	if f, err := strconv.ParseFloat(l, 64); err == nil {
+		return int64(f)
+	}
+
+	// 4:53
+	if strings.Contains(l, ":") {
+		parts := strings.Split(l, ":")
+		if len(parts) == 2 {
+			if minI, err := strconv.ParseInt(parts[0], 10, 64); err == nil {
+				if secI, err := strconv.ParseInt(parts[1], 10, 64); err == nil {
+					return minI*60 + secI
+				}
+			}
+		}
+	}
+
+	// 4m5s
+	return 0
+
 }

@@ -1,0 +1,19 @@
+
+https://archive.org/details/unlockedrecordings
+
+
+https://archive.org/metadata/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar
+"name": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.mp3",
+      "length": "521.64",
+
+1691271029
+522 seconds
+
+"disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.mp3"
+
+Final track:
+23:56
+1436s
+
+segments.final.duration = 1436
+

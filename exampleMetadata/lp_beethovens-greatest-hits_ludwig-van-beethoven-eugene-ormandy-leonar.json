@@ -1,0 +1,1696 @@
+{
+  "alternate_locations": {
+    "servers": [
+      {
+        "server": "dn721501.ca.archive.org",
+        "dir": "/0/items/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar"
+      }
+    ],
+    "workable": [
+      {
+        "server": "dn721501.ca.archive.org",
+        "dir": "/0/items/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar"
+      }
+    ]
+  },
+  "created": 1782228429,
+  "d1": "ia902903.us.archive.org",
+  "d2": "ia802903.us.archive.org",
+  "dir": "/16/items/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+  "files": [
+    {
+      "name": "__ia_thumb.jpg",
+      "source": "original",
+      "mtime": "1639621523",
+      "size": "18143",
+      "md5": "a551e32ab0a128e15029e552144a7f9d",
+      "crc32": "21bf5f5c",
+      "sha1": "2d2b7a3e589a46b53c4a9992af503f989b5ae27e",
+      "format": "Item Tile",
+      "rotation": "0"
+    },
+    {
+      "name": "disc-metadata.json",
+      "source": "original",
+      "mtime": "1582339683",
+      "size": "1436",
+      "md5": "933cdc3e4bc5d19ef2b22ef070a49255",
+      "crc32": "800f2d07",
+      "sha1": "ce2140270500b0bc6b8a718045bf76225f3de63d",
+      "format": "JSON"
+    },
+    {
+      "name": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.afpk",
+      "source": "derivative",
+      "format": "Columbia Peaks",
+      "original": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.mp3",
+      "mtime": "1691271029",
+      "size": "109856",
+      "md5": "f4bdd0bd2fa8702ac74e5b0bfd1582a8",
+      "crc32": "9928eee5",
+      "sha1": "2d352d8a05bd6595bc2de65195bda0e5e08e8434"
+    },
+    {
+      "name": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.mp3",
+      "source": "derivative",
+      "creator": "New York Philharmonic; Leonard Bernstein",
+      "title": "First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67",
+      "track": "1",
+      "album": "Beethoven's Greatest Hits",
+      "bitrate": "192",
+      "length": "521.64",
+      "format": "VBR MP3",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_segments.json",
+      "mtime": "1691262048",
+      "size": "12623472",
+      "md5": "2e1881dc432d34ddbebf7821020cb4ac",
+      "crc32": "fb97f750",
+      "sha1": "92041c55078ed66d6e91c90bccf3dcb5c2c13147"
+    },
+    {
+      "name": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.mp3",
+      "mtime": "1691264924",
+      "size": "37336",
+      "md5": "c7d6ef683ae63b6c7bda1c4aabc87ba9",
+      "crc32": "604d94db",
+      "sha1": "08a883446d5930bb58d9fb6fde2682885d49f439"
+    },
+    {
+      "name": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67_spectrogram.png",
+      "source": "derivative",
+      "format": "Spectrogram",
+      "original": "disc1/01.01. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67.mp3",
+      "mtime": "1691267852",
+      "size": "233014",
+      "md5": "c82ae849022ca47c6beb9769a50b4eb7",
+      "crc32": "11dfaba7",
+      "sha1": "4ceab48ab926c949225a08bba11469d02fe2d06e"
+    },
+    {
+      "name": "disc1/01.02. Minuet In G.afpk",
+      "source": "derivative",
+      "format": "Columbia Peaks",
+      "original": "disc1/01.02. Minuet In G.mp3",
+      "mtime": "1691269650",
+      "size": "37376",
+      "md5": "6549a40558d5951ae66b068f34e30d3d",
+      "crc32": "f5359871",
+      "sha1": "53275f0c800fee6fac50c953037eb6c7b9bf5b61"
+    },
+    {
+      "name": "disc1/01.02. Minuet In G.mp3",
+      "source": "derivative",
+      "creator": "The Philadelphia Orchestra; Eugene Ormandy",
+      "title": "Minuet In G",
+      "track": "2",
+      "album": "Beethoven's Greatest Hits",
+      "bitrate": "190",
+      "length": "179.14",
+      "format": "VBR MP3",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_segments.json",
+      "mtime": "1691262060",
+      "size": "4328502",
+      "md5": "244bdd92e8ed5ad9a073756008ca00ad",
+      "crc32": "fd9fe4a0",
+      "sha1": "3dc21b591c3eb37f33e97b597c72ae81377ec1e2"
+    },
+    {
+      "name": "disc1/01.02. Minuet In G.png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/01.02. Minuet In G.mp3",
+      "mtime": "1691263376",
+      "size": "32825",
+      "md5": "9173517555c7e985d52f642f91911e24",
+      "crc32": "a3e25cb2",
+      "sha1": "34a1444f05aa2e546bd412719680c845fab5e4d8"
+    },
+    {
+      "name": "disc1/01.02. Minuet In G_spectrogram.png",
+      "source": "derivative",
+      "format": "Spectrogram",
+      "original": "disc1/01.02. Minuet In G.mp3",
+      "mtime": "1691268440",
+      "size": "120197",
+      "md5": "6574ee1e2508921a645b93f6f1d5eba1",
+      "crc32": "703e1505",
+      "sha1": "7a73680d23a009a18fb8633394e038f69aef80f4"
+    },
+    {
+      "name": "disc1/01.03. Für Elise.afpk",
+      "source": "derivative",
+      "format": "Columbia Peaks",
+      "original": "disc1/01.03. Für Elise.mp3",
+      "mtime": "1691268932",
+      "size": "40216",
+      "md5": "69d5119196ed8c2c944c33b89d658159",
+      "crc32": "4f954634",
+      "sha1": "2fcc5cfed1643b63effc4c514c35beb1cd067d29"
+    },
+    {
+      "name": "disc1/01.03. Für Elise.mp3",
+      "source": "derivative",
+      "creator": "The Philadelphia Orchestra; William Smith",
+      "title": "Für Elise",
+      "track": "3",
+      "album": "Beethoven's Greatest Hits",
+      "bitrate": "187",
+      "length": "208.63",
+      "format": "VBR MP3",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_segments.json",
+      "mtime": "1691262074",
+      "size": "4959851",
+      "md5": "26145457decd3b3e9bc6feffe185eca9",
+      "crc32": "d41b99e3",
+      "sha1": "f0c11ae358bacc1d85250b9fedf18de1d35a1f5f"
+    },
+    {
+      "name": "disc1/01.03. Für Elise.png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/01.03. Für Elise.mp3",
+      "mtime": "1691263923",
+      "size": "32986",
+      "md5": "adde86bd115dd66b110dfc2f9ef27d83",
+      "crc32": "513e45eb",
+      "sha1": "7560f20fdbd4df735349686a86ef7b763fe6b1cf"
+    },
+    {
+      "name": "disc1/01.03. Für Elise_spectrogram.png",
+      "source": "derivative",
+      "format": "Spectrogram",
+      "original": "disc1/01.03. Für Elise.mp3",
+      "mtime": "1691268192",
+      "size": "137284",
+      "md5": "0c855c2ad6b5dbd41eb56c567eef8a2c",
+      "crc32": "ec3ef34b",
+      "sha1": "04a8ea81c495ed4761368074e083d9898b61e26f"
+    },
+    {
+      "name": "disc1/01.04. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\".afpk",
+      "source": "derivative",
+      "format": "Columbia Peaks",
+      "original": "disc1/01.04. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\".mp3",
+      "mtime": "1691269923",
+      "size": "59408",
+      "md5": "634b3087514a3b28c91a82dd8c1df730",
+      "crc32": "e5fbd62d",
+      "sha1": "ed1d4e5009102922dc68e1be379bc047e9dec36f"
+    },
+    {
+      "name": "disc1/01.04. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\".mp3",
+      "source": "derivative",
+      "creator": "Philippe Entremont",
+      "title": "First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2, \"Moonlight\"",
+      "track": "4",
+      "album": "Beethoven's Greatest Hits",
+      "bitrate": "184",
+      "length": "417.75",
+      "format": "VBR MP3",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_segments.json",
+      "mtime": "1691262100",
+      "size": "9705425",
+      "md5": "3a02b5be407bb02f17b32267f5ea37ea",
+      "crc32": "6395fe92",
+      "sha1": "e772a0906524c0ab70a0254976d4988dfad4ff36"
+    },
+    {
+      "name": "disc1/01.04. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\".png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/01.04. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\".mp3",
+      "mtime": "1691264197",
+      "size": "30215",
+      "md5": "f94b6f2f092df078ae97ac678b93bce7",
+      "crc32": "8cfd3513",
+      "sha1": "0a2eaf6865cd3142c048fb5a1bc63ad6d900fe91"
+    },
+    {
+      "name": "disc1/01.04. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\"_spectrogram.png",
+      "source": "derivative",
+      "format": "Spectrogram",
+      "original": "disc1/01.04. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\".mp3",
+      "mtime": "1691266922",
+      "size": "203752",
+      "md5": "9d0facded2d32aad6674f03371d9cb7b",
+      "crc32": "6105a206",
+      "sha1": "a8eda846213b24f7e56aad1c0c5af66bfbc051d7"
+    },
+    {
+      "name": "disc1/01.05. Turkish March From \"Ruins Of Athens\".afpk",
+      "source": "derivative",
+      "format": "Columbia Peaks",
+      "original": "disc1/01.05. Turkish March From \"Ruins Of Athens\".mp3",
+      "mtime": "1691270517",
+      "size": "18088",
+      "md5": "c5c8b5128a60a7533969818302d9fa79",
+      "crc32": "636db933",
+      "sha1": "8960f12bbd292c54257735649a63c4cd30c6d055"
+    },
+    {
+      "name": "disc1/01.05. Turkish March From \"Ruins Of Athens\".mp3",
+      "source": "derivative",
+      "creator": "The Philadelphia Orchestra; Eugene Ormandy",
+      "title": "Turkish March From \"Ruins Of Athens\"",
+      "track": "5",
+      "album": "Beethoven's Greatest Hits",
+      "bitrate": "193",
+      "length": "115.82",
+      "format": "VBR MP3",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_segments.json",
+      "mtime": "1691262109",
+      "size": "2882283",
+      "md5": "1d28c97833433e9b9172fad27712bee2",
+      "crc32": "87ee9960",
+      "sha1": "60e7351429698fbd6fe741c8c9a5b310e405cdb5"
+    },
+    {
+      "name": "disc1/01.05. Turkish March From \"Ruins Of Athens\".png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/01.05. Turkish March From \"Ruins Of Athens\".mp3",
+      "mtime": "1691263658",
+      "size": "37387",
+      "md5": "3b8cb2b119991d5e42ac0e7c680ed9d0",
+      "crc32": "e1f1b2c4",
+      "sha1": "be487f3a04fa63796db63c02605a2cec6a1a49d4"
+    },
+    {
+      "name": "disc1/01.05. Turkish March From \"Ruins Of Athens\"_spectrogram.png",
+      "source": "derivative",
+      "format": "Spectrogram",
+      "original": "disc1/01.05. Turkish March From \"Ruins Of Athens\".mp3",
+      "mtime": "1691267420",
+      "size": "78247",
+      "md5": "f84d0bf94cc4dc374b460e8c897902e2",
+      "crc32": "d3fd876f",
+      "sha1": "3590d79f894cddc513a3822b47d3af81a53e72cf"
+    },
+    {
+      "name": "disc1/02.01. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\".afpk",
+      "source": "derivative",
+      "format": "Columbia Peaks",
+      "original": "disc1/02.01. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\".mp3",
+      "mtime": "1691270278",
+      "size": "315464",
+      "md5": "4d676d17c66f0ca14b5d192c90a03702",
+      "crc32": "28797dba",
+      "sha1": "c866e5f82de268b24ddeb2a622bfc1e8ad4f7d47"
+    },
+    {
+      "name": "disc1/02.01. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\".mp3",
+      "source": "derivative",
+      "creator": "The Mormon Tabernacle Choir; Richard P. Condie; The Philadelphia Orchestra; Eugene Ormandy",
+      "title": "Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\"",
+      "track": "1",
+      "album": "Beethoven's Greatest Hits",
+      "bitrate": "190",
+      "length": "1435.63",
+      "format": "VBR MP3",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_segments.json",
+      "mtime": "1691262354",
+      "size": "34167665",
+      "md5": "f707cf3d93288d74c8e6368902c6c771",
+      "crc32": "4045b292",
+      "sha1": "c68a99ce8a44b0d6ec62f39c788c25ebeabaca7c"
+    },
+    {
+      "name": "disc1/02.01. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\".png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/02.01. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\".mp3",
+      "mtime": "1691264519",
+      "size": "40270",
+      "md5": "8c98c0947b8e21a5d5bb7aa52e21856e",
+      "crc32": "19767800",
+      "sha1": "2d691b061bccdfa4a90d1d2988d859d5e730ccfc"
+    },
+    {
+      "name": "disc1/02.01. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\"_spectrogram.png",
+      "source": "derivative",
+      "format": "Spectrogram",
+      "original": "disc1/02.01. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\".mp3",
+      "mtime": "1691265619",
+      "size": "303010",
+      "md5": "fb52e278c5c2eac3631fa4a157c83869",
+      "crc32": "b9ab6768",
+      "sha1": "93640e36ed8dcf4a41fc34ada536398f867e6a9a"
+    },
+    {
+      "name": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side1.flac",
+      "source": "original",
+      "mtime": "1584401510",
+      "size": "502931230",
+      "md5": "5f01f782eda01eec9af4d17f998400d9",
+      "crc32": "b2874b3f",
+      "sha1": "dcde88c2fd5ca983df01e4f06b80f47ca91d6766",
+      "format": "24bit Flac",
+      "length": "1815.6",
+      "height": "0",
+      "width": "0",
+      "track": "01",
+      "comment": "Processed by SoX"
+    },
+    {
+      "name": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side1.opus",
+      "source": "original",
+      "mtime": "1584401520",
+      "size": "15272416",
+      "md5": "958164b3d6b924120d1a541e41bbe36f",
+      "crc32": "e3cb1048",
+      "sha1": "05db77a4baf01556df2ae6957867310be4da5e4e",
+      "format": "Unknown"
+    },
+    {
+      "name": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side1.png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side1.flac",
+      "mtime": "1584404022",
+      "size": "35180",
+      "md5": "cfcc9650b36580ab446d6405e4d064d1",
+      "crc32": "d445436a",
+      "sha1": "18caaa0a0f367b3acc9ccd20a75c8cc761ff3979"
+    },
+    {
+      "name": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side2.flac",
+      "source": "original",
+      "mtime": "1584401608",
+      "size": "565373334",
+      "md5": "b7b697756c46eaa57bb7a20b82ac361f",
+      "crc32": "d6c78957",
+      "sha1": "9a02770dacd74c6495cc93eeafbd3ca759887dc9",
+      "format": "24bit Flac",
+      "length": "2031.8",
+      "height": "0",
+      "width": "0",
+      "track": "02",
+      "comment": "Processed by SoX"
+    },
+    {
+      "name": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side2.opus",
+      "source": "original",
+      "mtime": "1584401527",
+      "size": "16496925",
+      "md5": "4771fceb8013ff29f0dc0c9d12cfb749",
+      "crc32": "db98393f",
+      "sha1": "d35ed8937db61c07903aff1b6514540db58ccb5e",
+      "format": "Unknown"
+    },
+    {
+      "name": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side2.png",
+      "source": "derivative",
+      "format": "PNG",
+      "original": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side2.flac",
+      "mtime": "1584403574",
+      "size": "39645",
+      "md5": "0d3f2a474a12c6eebe7837b82072772c",
+      "crc32": "444ce601",
+      "sha1": "956d7bb494350e8990668a7dee79338eaed99870"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar.pdf",
+      "source": "derivative",
+      "pdf_module_version": "0.0.23",
+      "format": "Text PDF",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_page_numbers.json",
+      "mtime": "1691271806",
+      "size": "4671835",
+      "md5": "f4a0dbc03fc506203b92793b3a9f8bc8",
+      "crc32": "2512772d",
+      "sha1": "a59192dab87a51774c619ad205c1f88ed3571287"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_archive.torrent",
+      "source": "metadata",
+      "btih": "8c88f700ae549c59dba6594b69021f2c46608da1",
+      "mtime": "1763342163",
+      "size": "51413",
+      "md5": "e00702100c6d60ded579b9744a188f72",
+      "crc32": "2775a95c",
+      "sha1": "e718050a2f1ed1b678cd76d76a30a2a50e348518",
+      "format": "Archive BitTorrent"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_chocr.html.gz",
+      "source": "derivative",
+      "ocr": "tesseract 5.0.0-1-g862e",
+      "ocr_parameters": "-l eng",
+      "ocr_module_version": "0.0.14",
+      "ocr_detected_script": "Latin",
+      "ocr_detected_script_conf": "0.9141",
+      "ocr_detected_lang": "en",
+      "ocr_detected_lang_conf": "1.0000",
+      "format": "chOCR",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_jp2.zip",
+      "mtime": "1639620578",
+      "size": "84770",
+      "md5": "407a67f88dfe46298339aa1dc5b96301",
+      "crc32": "ff9620e9",
+      "sha1": "f7149f2ab289311ea60634d132f587fe4a7a2991"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_djvu.txt",
+      "source": "derivative",
+      "format": "DjVuTXT",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_djvu.xml",
+      "mtime": "1639621092",
+      "size": "5801",
+      "md5": "927a7cb161e3fdc839143ba3842c66dc",
+      "crc32": "8d9696bf",
+      "sha1": "1364fbf86c6a497dd76afef8f19f4a265d59efc8"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_djvu.xml",
+      "source": "derivative",
+      "format": "Djvu XML",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_hocr.html",
+      "mtime": "1639620843",
+      "size": "77299",
+      "md5": "dfa89d0764c89620d342e3b3a51326ca",
+      "crc32": "cea5b40b",
+      "sha1": "de7c614b524a57460bad01dda9bbf566b9129a65"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_files.xml",
+      "source": "original",
+      "format": "Metadata",
+      "md5": "5d68dcd050151dbbc8f9eb64c7f3d03b",
+      "summation": "md5"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_hocr.html",
+      "source": "derivative",
+      "hocr_char_to_word_module_version": "1.0.0",
+      "hocr_char_to_word_hocr_version": "1.1.2",
+      "ocr_parameters": "-l eng",
+      "ocr_module_version": "0.0.14",
+      "ocr_detected_script": "Latin",
+      "ocr_detected_script_conf": "0.9141",
+      "ocr_detected_lang": "en",
+      "ocr_detected_lang_conf": "1.0000",
+      "format": "hOCR",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_chocr.html.gz",
+      "mtime": "1639620730",
+      "size": "146517",
+      "md5": "2d607df49856083cee68bf5f99eee540",
+      "crc32": "d5bbfa08",
+      "sha1": "1611bb88fd746af6eb0cb21d73ef18ba004e1655"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_hocr_pageindex.json.gz",
+      "source": "derivative",
+      "hocr_pageindex_module_version": "1.0.0",
+      "hocr_pageindex_hocr_version": "1.1.0",
+      "format": "OCR Page Index",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_hocr.html",
+      "mtime": "1639620912",
+      "size": "81",
+      "md5": "ec613fea948dab193ca7cfb1ac5c8bbc",
+      "crc32": "ef3358ee",
+      "sha1": "bf531559ece8f06600aff99bba9a85e08a5a0343"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_hocr_searchtext.txt.gz",
+      "source": "derivative",
+      "hocr_fts_text_module_version": "1.1.0",
+      "hocr_fts_text_hocr_version": "1.1.0",
+      "word_conf_0_10": "17",
+      "word_conf_11_20": "3",
+      "word_conf_21_30": "9",
+      "word_conf_31_40": "6",
+      "word_conf_41_50": "16",
+      "word_conf_51_60": "10",
+      "word_conf_61_70": "8",
+      "word_conf_71_80": "10",
+      "word_conf_81_90": "40",
+      "word_conf_91_100": "795",
+      "format": "OCR Search Text",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_hocr.html",
+      "mtime": "1639620990",
+      "size": "3050",
+      "md5": "bbafa992a397a0a9e334cd1d430919ba",
+      "crc32": "dbaf6d4d",
+      "sha1": "7d31142b106be42526e72e464c79657a2549cf93"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_images.zip",
+      "source": "original",
+      "mtime": "1582340277",
+      "size": "822943896",
+      "md5": "029e91506d5b4e6ae1cf11d57eb47718",
+      "crc32": "fa197b46",
+      "sha1": "02bd1431d330669a58e7908ed4db1c7473baa74f",
+      "format": "Generic Raw Book Zip",
+      "filecount": "4"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_itemimage.png",
+      "source": "original",
+      "mtime": "1582340291",
+      "size": "1309101",
+      "md5": "42fa1dc28636d4757d89da7a3f154ba9",
+      "crc32": "0c53c0a9",
+      "sha1": "3c77535a492a61f9f1c335517e1a56d6e83a767d",
+      "format": "Item Image"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_jp2.zip",
+      "source": "derivative",
+      "format": "Single Page Processed JP2 ZIP",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_images.zip",
+      "mtime": "1639619768",
+      "size": "13583438",
+      "md5": "3d963ab7f1ce4e91517988cf20e09e9b",
+      "crc32": "e746b783",
+      "sha1": "ebe2f9ae39cc46e5869f6dc16c00d2452e0be0a9",
+      "filecount": "4"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_meta.sqlite",
+      "source": "original",
+      "mtime": "1584401671",
+      "size": "24576",
+      "format": "Metadata",
+      "md5": "ff060859ffb16b3cd8bdb81eaec83c49",
+      "crc32": "e292946e",
+      "sha1": "b3222c25bd479ba4028c954c3b6dd5f4d7a9fa0d"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_meta.xml",
+      "source": "original",
+      "mtime": "1756841262",
+      "size": "4224",
+      "format": "Metadata",
+      "md5": "f2b88165fb2dbf051fab4675c8afd0f6",
+      "crc32": "994cc8fd",
+      "sha1": "a46ad273e023f5ace58b7017446d41b2d81df3e9"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_page_numbers.json",
+      "source": "derivative",
+      "hocr_pagenumber_module_version": "1.0.3",
+      "hocr_pagenumber_hocr_version": "1.1.50",
+      "hocr_pagenumber_confidence": "0",
+      "format": "Page Numbers JSON",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_hocr.html",
+      "mtime": "1691270906",
+      "size": "879",
+      "md5": "0adf13dba12b72f83d1bb04ae841da3a",
+      "crc32": "0332ffa4",
+      "sha1": "de99364ba599a1f15c09100d9dc91ed662d8e8a7"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_reviews.xml",
+      "source": "original",
+      "mtime": "1763342152",
+      "size": "1062",
+      "md5": "ee2bb5adddb2fd46eb3a7c1399c3e5c6",
+      "crc32": "b88d3bbf",
+      "sha1": "fe05ec5205b3e9946bb7f7f388d24295d463fdf0",
+      "format": "Metadata"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_scandata-segmenting.json",
+      "source": "original",
+      "mtime": "1584401451",
+      "size": "8166",
+      "md5": "ad4ff287fead4db6ae5a2d2ab47a156e",
+      "crc32": "894759f3",
+      "sha1": "0a410b17915c09990a8ff64ea09bf08325f5cf29",
+      "format": "JSON"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_scandata.json",
+      "source": "original",
+      "mtime": "1582339688",
+      "size": "10179",
+      "md5": "35177501636998a1de4e8a808bef1b6a",
+      "crc32": "255a02c2",
+      "sha1": "4a791903ae9b43968632a1a3a3eebe5116371392",
+      "format": "Scandata JSON"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_scandata.xml",
+      "source": "derivative",
+      "format": "Scandata",
+      "original": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_djvu.xml",
+      "mtime": "1691270906",
+      "size": "1598",
+      "md5": "7429845d10f662354fd3707ef5ba4214",
+      "crc32": "a7e3f8c3",
+      "sha1": "36f9b5e4e17236413948eae4f3e93c9d77ad7a61"
+    },
+    {
+      "name": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_segments.json",
+      "source": "original",
+      "mtime": "1584401442",
+      "size": "5542",
+      "md5": "5ba7331dc3ea856e3de98188d3c9b37f",
+      "crc32": "895fbf34",
+      "sha1": "22b1f073168ead502ad1ce21af32f41a6df9d43a",
+      "format": "Segment Data"
+    }
+  ],
+  "files_count": 52,
+  "item_last_updated": 1763342163,
+  "item_size": 2013635865,
+  "metadata": {
+    "identifier": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+    "adaptive_ocr": "true",
+    "betterpdf": "true",
+    "bookreader-defaults": "mode/1up",
+    "boxid": [
+      "IA1601326",
+      "IA1548719",
+      "IA1558017"
+    ],
+    "catalog_time": "244",
+    "collection": [
+      "album_recordings",
+      "vinyl_bostonpubliclibrary",
+      "audio_music",
+      "unlockedrecordings",
+      "vinyl_santa-cruz-records",
+      "vinyl_miscellaneous-records"
+    ],
+    "contributor": "Internet Archive",
+    "country": "US",
+    "creator": [
+      "Ludwig Van Beethoven",
+      "Eugene Ormandy",
+      "Leonard Bernstein",
+      "New York Philharmonic",
+      "Philippe Entremont",
+      "Richard P. Condie",
+      "The Mormon Tabernacle Choir",
+      "The Philadelphia Orchestra",
+      "William Smith"
+    ],
+    "date": "1969",
+    "description": "Tracklist:\n\n 1. First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67 - New York Philharmonic; Leonard Bernstein\n 2. Minuet In G - The Philadelphia Orchestra; Eugene Ormandy\n 3. Für Elise - The Philadelphia Orchestra; William Smith\n 4. First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\" - Philippe Entremont\n 5. Turkish March From \"Ruins Of Athens\" - The Philadelphia Orchestra; Eugene Ormandy\n 6. Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\" - The Mormon Tabernacle Choir; Richard P. Condie; The Philadelphia Orchestra; Eugene Ormandy",
+    "external-identifier": [
+      "urn:discogs:master:247050",
+      "urn:discogs:release:2207143"
+    ],
+    "genre": [
+      "Classical",
+      "Romantic",
+      "Classical"
+    ],
+    "language": "eng",
+    "lineage": "Technics SL1200MK5 Turntable + Audio-Technica AT95e cartridge > Radio Design Labs EZ-PH1 phono preamp > Focusrite Scarlett 2i2",
+    "mediatype": "audio",
+    "operator": "associate-klentjohn-postanes@archive.org",
+    "ppi": "600",
+    "publisher": "CBS Masterworks",
+    "publisher-catalog-number": "MS 7504",
+    "scandate": "20200221065347",
+    "scanner": "archivelp-cat-cebu01",
+    "scanningcenter": "cebu",
+    "software_version": "ArchiveCD Version 2.2.55lp",
+    "source": "Vinyl LP",
+    "source-id": "discogs.com",
+    "subject": [
+      "Classical",
+      "Romantic",
+      "Classical"
+    ],
+    "title": "Beethoven's Greatest Hits",
+    "uploader": "associate-klentjohn-postanes@archive.org",
+    "publicdate": "2020-02-21 06:54:29",
+    "original-ppi": "1200",
+    "identifier-access": "http://archive.org/details/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+    "identifier-ark": "ark:/13960/t9c624q0k",
+    "imagecount": "4",
+    "ripping_software_version": "ArchiveCD Version 2.2.53lp",
+    "ripping_date": "20200316232925",
+    "disccount": "1",
+    "ripping_time": "5113",
+    "ripping_operator": "associate-klentjohn-postanes@archive.org",
+    "ripping_scanner": "archivelp-rip-cebu12",
+    "addeddate": "2020-03-16 23:35:02",
+    "backup_location": "ia907105_18",
+    "derive_submittime": "2023-08-05 18:49:52",
+    "ocr": "tesseract 5.0.0-1-g862e",
+    "ocr_parameters": "-l eng",
+    "ocr_module_version": "0.0.14",
+    "ocr_detected_script": "Latin",
+    "ocr_detected_script_conf": "0.9141",
+    "ocr_detected_lang": "en",
+    "ocr_detected_lang_conf": "1.0000",
+    "page_number_confidence": "0",
+    "page_number_module_version": "1.0.3",
+    "pdf_module_version": "0.0.23"
+  },
+  "page_numbers": {
+    "identifier": "lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+    "format-version": "2",
+    "archive-hocr-tools-version": "1.1.50",
+    "confidence": 0,
+    "pages": [
+      {
+        "leafNum": 0,
+        "confidence": null,
+        "pageNumber": "",
+        "pageProb": null,
+        "wordConf": null
+      },
+      {
+        "leafNum": 1,
+        "confidence": null,
+        "pageNumber": "",
+        "pageProb": null,
+        "wordConf": null
+      },
+      {
+        "leafNum": 2,
+        "confidence": null,
+        "pageNumber": "",
+        "pageProb": null,
+        "wordConf": null
+      },
+      {
+        "leafNum": 3,
+        "confidence": null,
+        "pageNumber": "",
+        "pageProb": null,
+        "wordConf": null
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "reviewtitle": "peak",
+      "reviewbody": "ts fire, it is going on my ipod",
+      "stars": "5",
+      "reviewer": "Gabe533",
+      "reviewdate": "2025-10-22 03:21:17",
+      "createdate": "2025-10-22 03:18:26",
+      "reviewer_itemname": "@gabe533"
+    },
+    {
+      "reviewtitle": "Sweet childhood memories",
+      "reviewbody": "When you randomly open the \"Music Modernization Act\" page and the first thing you see is the cover of the LP your second grade teacher gave you on Beethoven's Birthday in 1972",
+      "stars": "5",
+      "reviewer": "Aaron_Barnhart",
+      "reviewdate": "2025-11-17 01:15:48",
+      "createdate": "2025-11-16 13:14:34",
+      "reviewer_itemname": "@history_is_power"
+    }
+  ],
+  "scandata": {
+    "analytics": {
+      "events": [
+        [
+          "archive_matches",
+          "tab",
+          1582267795.813112,
+          {}
+        ],
+        [
+          "identify_album",
+          "tab",
+          1582267795.815415,
+          {}
+        ],
+        [
+          "external_matches",
+          "tab",
+          1582267795.824572,
+          {}
+        ],
+        [
+          "identify_album",
+          "tab",
+          1582267815.97387,
+          {}
+        ],
+        [
+          "item_metadata",
+          "tab",
+          1582267816.275784,
+          {}
+        ],
+        [
+          "scan_materials",
+          "tab",
+          1582267817.134321,
+          {}
+        ],
+        [
+          "scan",
+          "start",
+          1582267819.943351,
+          {
+            "preset": {
+              "desc": "Cover",
+              "dpi": 1200,
+              "height": 12800,
+              "icon": "ss_lp-cover",
+              "left": 70,
+              "rotation": null,
+              "scantype": "cover",
+              "top": 105,
+              "width": 12800
+            },
+            "template": "cover"
+          }
+        ],
+        [
+          "scan",
+          "complete",
+          1582267854.794673,
+          {}
+        ],
+        [
+          "scan",
+          "start",
+          1582267872.144621,
+          {
+            "preset": {
+              "desc": "Cover",
+              "dpi": 1200,
+              "height": 12800,
+              "icon": "ss_lp-cover",
+              "left": 70,
+              "rotation": null,
+              "scantype": "cover",
+              "top": 105,
+              "width": 12800
+            },
+            "template": "cover"
+          }
+        ],
+        [
+          "scan_crop",
+          "oneshot",
+          1582267884.151929,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpxGrhrU.png"
+            }
+          }
+        ],
+        [
+          "scan",
+          "complete",
+          1582267900.944439,
+          {}
+        ],
+        [
+          "scan",
+          "start",
+          1582267906.153804,
+          {
+            "preset": {
+              "desc": "Full Disc",
+              "dpi": 600,
+              "height": 11923,
+              "icon": "ss_lp-disc",
+              "left": 75,
+              "rotation": null,
+              "scantype": "disc",
+              "top": 50,
+              "width": 11852
+            },
+            "template": "full_disc"
+          }
+        ],
+        [
+          "scan_crop",
+          "oneshot",
+          1582267912.825653,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpor8p2q.png"
+            }
+          }
+        ],
+        [
+          "scan",
+          "complete",
+          1582267918.3422,
+          {}
+        ],
+        [
+          "scan",
+          "start",
+          1582267922.466372,
+          {
+            "preset": {
+              "desc": "Full Disc",
+              "dpi": 600,
+              "height": 11923,
+              "icon": "ss_lp-disc",
+              "left": 75,
+              "rotation": null,
+              "scantype": "disc",
+              "top": 50,
+              "width": 11852
+            },
+            "template": "full_disc"
+          }
+        ],
+        [
+          "scan_align_disc",
+          "start",
+          1582267925.119518,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpvSc63n.png"
+            }
+          }
+        ],
+        [
+          "scan",
+          "complete",
+          1582267934.196664,
+          {}
+        ],
+        [
+          "scan_align_disc",
+          "complete",
+          1582267939.945741,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpvSc63n.png"
+            }
+          }
+        ],
+        [
+          "scan_align_disc",
+          "start",
+          1582267951.059959,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpfQqNwE.png"
+            }
+          }
+        ],
+        [
+          "scan_align_disc",
+          "complete",
+          1582267960.576024,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpfQqNwE.png"
+            }
+          }
+        ],
+        [
+          "scan_align_disc",
+          "start",
+          1582267967.930861,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpfQqNwE.png"
+            }
+          }
+        ],
+        [
+          "scan_align_disc",
+          "complete",
+          1582267979.479945,
+          {
+            "scan": {
+              "path": "/home/archivelp/.local/share/archivecd/to-process/.tmp.discogs.com.2207143/scans/tmp/tmpfQqNwE.png"
+            }
+          }
+        ],
+        [
+          "item_metadata",
+          "tab",
+          1582267990.877414,
+          {}
+        ],
+        [
+          "disc_metadata",
+          "tab",
+          1582267996.433818,
+          {
+            "disc_number": 1
+          }
+        ],
+        [
+          "scan_materials",
+          "tab",
+          1582268006.204749,
+          {}
+        ],
+        [
+          "review_item",
+          "tab",
+          1582268014.208339,
+          {}
+        ],
+        [
+          "project",
+          "complete",
+          1582268086.957901,
+          {}
+        ]
+      ],
+      "tabs": {
+        "archive_matches": {
+          "focus_times": [
+            {
+              "end": 1582267795.815415,
+              "start": 1582267795.813112
+            }
+          ],
+          "total_time_focused": 0
+        },
+        "disc_metadata": {
+          "focus_times": [
+            {
+              "end": 1582268006.204749,
+              "start": 1582267996.433818
+            }
+          ],
+          "total_time_focused": 10
+        },
+        "external_matches": {
+          "focus_times": [
+            {
+              "end": 1582267815.97387,
+              "start": 1582267795.824572
+            }
+          ],
+          "total_time_focused": 20
+        },
+        "identify_album": {
+          "focus_times": [
+            {
+              "end": 1582267795.824572,
+              "start": 1582267795.815415
+            },
+            {
+              "end": 1582267816.275784,
+              "start": 1582267815.97387
+            }
+          ],
+          "total_time_focused": 0
+        },
+        "item_metadata": {
+          "focus_times": [
+            {
+              "end": 1582267817.134321,
+              "start": 1582267816.275784
+            },
+            {
+              "end": 1582267996.433818,
+              "start": 1582267990.877414
+            }
+          ],
+          "total_time_focused": 6
+        },
+        "review_item": {
+          "focus_times": [
+            {
+              "end": 1582268086.957901,
+              "start": 1582268014.208339
+            }
+          ],
+          "total_time_focused": 73
+        },
+        "scan_materials": {
+          "focus_times": [
+            {
+              "end": 1582267990.877414,
+              "start": 1582267817.134321
+            },
+            {
+              "end": 1582268014.208339,
+              "start": 1582268006.204749
+            }
+          ],
+          "total_time_focused": 182
+        }
+      }
+    },
+    "log_url": "https://archive.org/download/archivelp-logs-2020-02/2020-02-21T06:48:51Z_94:c6:91:ae:71:86.log",
+    "technical_metadata": {
+      "discs": []
+    }
+  },
+  "scandata-segmenting": {
+    "analytics": {
+      "events": [
+        [
+          "record_and_segment",
+          "tab",
+          1584396268.939621,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record",
+          "start",
+          1584397368.73238,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record",
+          "stop",
+          1584397382.615298,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record",
+          "start",
+          1584397383.89469,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record",
+          "stop",
+          1584399199.433217,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_segment_tracks",
+          "oneshot",
+          1584399200.43725,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_autosegment_tracks",
+          "start",
+          1584399200.437809,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_and_segment",
+          "tab",
+          1584399201.130813,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record",
+          "start",
+          1584399206.349341,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_autosegment_tracks",
+          "complete",
+          1584399214.759169,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record",
+          "stop",
+          1584401238.3081,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_tracks",
+          "oneshot",
+          1584401322.96226,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_autosegment_tracks",
+          "start",
+          1584401322.96323,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_autosegment_tracks",
+          "complete",
+          1584401338.577145,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_scrolling",
+          "start",
+          1584401347.592532,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_scrolling",
+          "complete",
+          1584401347.864219,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_scrolling",
+          "start",
+          1584401348.598456,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_scrolling",
+          "complete",
+          1584401348.783868,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_edit",
+          "start",
+          1584401351.657284,
+          {
+            "disc_number": 1,
+            "segment_edge": [
+              1,
+              1
+            ],
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_edit",
+          "complete",
+          1584401353.008405,
+          {
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_segment_locked",
+          "oneshot",
+          1584401353.489571,
+          {
+            "active_segment_track": 6,
+            "disc_number": 1,
+            "side_index": 2
+          }
+        ],
+        [
+          "record_and_segment",
+          "tab",
+          1584401355.947114,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_segment_scrolling",
+          "start",
+          1584401358.006344,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_segment_scrolling",
+          "complete",
+          1584401358.315534,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_segment_unlocked",
+          "oneshot",
+          1584401358.920476,
+          {
+            "active_segment_track": 1,
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_segment_edit",
+          "start",
+          1584401359.648849,
+          {
+            "disc_number": 1,
+            "segment_edge": [
+              1,
+              0
+            ],
+            "side_index": 1
+          }
+        ],
+        [
+          "record_segment_edit",
+          "complete",
+          1584401360.048781,
+          {
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "record_segment_locked",
+          "oneshot",
+          1584401360.216939,
+          {
+            "active_segment_track": 1,
+            "disc_number": 1,
+            "side_index": 1
+          }
+        ],
+        [
+          "project",
+          "complete",
+          1584401365.670539,
+          {}
+        ]
+      ],
+      "tabs": {
+        "record_and_segment": {
+          "focus_times": [
+            {
+              "end": 1584399201.130813,
+              "start": 1584396268.939621
+            },
+            {
+              "end": 1584401355.947114,
+              "start": 1584399201.130813
+            },
+            {
+              "end": 1584401365.670539,
+              "start": 1584401355.947114
+            }
+          ],
+          "total_time_focused": 5097
+        }
+      }
+    },
+    "log_url": "https://archive.org/download/archivelp-logs-2020-03/2020-03-16T22:00:04Z_94:c6:91:a4:14:f1.log",
+    "technical_metadata": {
+      "discs": []
+    }
+  },
+  "segments": [
+    {
+      "tracks": [
+        {
+          "file_md": {
+            "album": "Beethoven's Greatest Hits",
+            "track": "1",
+            "artist": "New York Philharmonic; Leonard Bernstein",
+            "disc": "1",
+            "title": "First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67"
+          },
+          "segments": {
+            "initial": {
+              "duration": 518159,
+              "start": 9932,
+              "confidence": 0.0,
+              "end": 528091
+            },
+            "final": {
+              "duration": 521607,
+              "start": 6484,
+              "end": 528091
+            }
+          },
+          "file_tags": {
+            "ALBUM": "Beethoven's Greatest Hits",
+            "TITLE": "First Movement (Allegro Con Brio) From Symphony No. 5 In C Minor, Op. 67",
+            "TOTALDISCS": "1",
+            "TOTALTRACKS": "6",
+            "DATE": "1969",
+            "DISCNUMBER": "1",
+            "DESCRIPTION": "https://archive.org/details/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+            "ARTIST": "New York Philharmonic; Leonard Bernstein",
+            "ALBUMARTIST": "Ludwig Van Beethoven",
+            "GENRE": [
+              "Classical",
+              "Romantic",
+              "Classical"
+            ],
+            "TRACKNUMBER": "1"
+          }
+        },
+        {
+          "file_md": {
+            "album": "Beethoven's Greatest Hits",
+            "track": "2",
+            "artist": "The Philadelphia Orchestra; Eugene Ormandy",
+            "disc": "1",
+            "title": "Minuet In G"
+          },
+          "segments": {
+            "initial": {
+              "duration": 179096,
+              "start": 528091,
+              "confidence": 0.0,
+              "end": 707187
+            },
+            "final": {
+              "duration": 179096,
+              "start": 528091,
+              "end": 707187
+            }
+          },
+          "file_tags": {
+            "ALBUM": "Beethoven's Greatest Hits",
+            "TITLE": "Minuet In G",
+            "TOTALDISCS": "1",
+            "TOTALTRACKS": "6",
+            "DATE": "1969",
+            "DISCNUMBER": "1",
+            "DESCRIPTION": "https://archive.org/details/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+            "ARTIST": "The Philadelphia Orchestra; Eugene Ormandy",
+            "ALBUMARTIST": "Ludwig Van Beethoven",
+            "GENRE": [
+              "Classical",
+              "Romantic",
+              "Classical"
+            ],
+            "TRACKNUMBER": "2"
+          }
+        },
+        {
+          "file_md": {
+            "album": "Beethoven's Greatest Hits",
+            "track": "3",
+            "artist": "The Philadelphia Orchestra; William Smith",
+            "disc": "1",
+            "title": "Für Elise"
+          },
+          "segments": {
+            "initial": {
+              "duration": 208556,
+              "start": 707187,
+              "confidence": 0.0,
+              "end": 915744
+            },
+            "final": {
+              "duration": 208556,
+              "start": 707187,
+              "end": 915744
+            }
+          },
+          "file_tags": {
+            "ALBUM": "Beethoven's Greatest Hits",
+            "TITLE": "Für Elise",
+            "TOTALDISCS": "1",
+            "TOTALTRACKS": "6",
+            "DATE": "1969",
+            "DISCNUMBER": "1",
+            "DESCRIPTION": "https://archive.org/details/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+            "ARTIST": "The Philadelphia Orchestra; William Smith",
+            "ALBUMARTIST": "Ludwig Van Beethoven",
+            "GENRE": [
+              "Classical",
+              "Romantic",
+              "Classical"
+            ],
+            "TRACKNUMBER": "3"
+          }
+        },
+        {
+          "file_md": {
+            "album": "Beethoven's Greatest Hits",
+            "track": "4",
+            "artist": "Philippe Entremont",
+            "disc": "1",
+            "title": "First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\""
+          },
+          "segments": {
+            "initial": {
+              "duration": 417713,
+              "start": 915744,
+              "confidence": 0.0,
+              "end": 1333457
+            },
+            "final": {
+              "duration": 417713,
+              "start": 915744,
+              "end": 1333457
+            }
+          },
+          "file_tags": {
+            "ALBUM": "Beethoven's Greatest Hits",
+            "TITLE": "First Movement (Adagio Sostenuto) From Sonata No. 14 In C-Sharp Minor, Op. 27, No. 2,  \"Moonlight\"",
+            "TOTALDISCS": "1",
+            "TOTALTRACKS": "6",
+            "DATE": "1969",
+            "DISCNUMBER": "1",
+            "DESCRIPTION": "https://archive.org/details/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+            "ARTIST": "Philippe Entremont",
+            "ALBUMARTIST": "Ludwig Van Beethoven",
+            "GENRE": [
+              "Classical",
+              "Romantic",
+              "Classical"
+            ],
+            "TRACKNUMBER": "4"
+          }
+        },
+        {
+          "file_md": {
+            "album": "Beethoven's Greatest Hits",
+            "track": "5",
+            "artist": "The Philadelphia Orchestra; Eugene Ormandy",
+            "disc": "1",
+            "title": "Turkish March From \"Ruins Of Athens\""
+          },
+          "segments": {
+            "initial": {
+              "duration": 115776,
+              "start": 1333457,
+              "confidence": 0.0,
+              "end": 1449233
+            },
+            "final": {
+              "duration": 115776,
+              "start": 1333457,
+              "end": 1449233
+            }
+          },
+          "file_tags": {
+            "ALBUM": "Beethoven's Greatest Hits",
+            "TITLE": "Turkish March From \"Ruins Of Athens\"",
+            "TOTALDISCS": "1",
+            "TOTALTRACKS": "6",
+            "DATE": "1969",
+            "DISCNUMBER": "1",
+            "DESCRIPTION": "https://archive.org/details/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+            "ARTIST": "The Philadelphia Orchestra; Eugene Ormandy",
+            "ALBUMARTIST": "Ludwig Van Beethoven",
+            "GENRE": [
+              "Classical",
+              "Romantic",
+              "Classical"
+            ],
+            "TRACKNUMBER": "5"
+          }
+        }
+      ],
+      "target_dir": "disc1",
+      "segmenter_version": "1.0.1",
+      "archivelp_version": "2.2.53lp",
+      "file": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side1.flac"
+    },
+    {
+      "tracks": [
+        {
+          "file_md": {
+            "album": "Beethoven's Greatest Hits",
+            "track": "1",
+            "artist": "The Mormon Tabernacle Choir; Richard P. Condie; The Philadelphia Orchestra; Eugene Ormandy",
+            "disc": "1",
+            "title": "Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\""
+          },
+          "segments": {
+            "initial": {
+              "duration": 1792882,
+              "start": 5772,
+              "confidence": 0.0,
+              "end": 1798655
+            },
+            "final": {
+              "duration": 1435643,
+              "start": 5772,
+              "end": 1441415
+            }
+          },
+          "file_tags": {
+            "ALBUM": "Beethoven's Greatest Hits",
+            "TITLE": "Final Movement (Presto; Allegro Assai; Rezitativo; Allegro Assai) From Symphony No. 9 In D Minor, Op. 125, \"Choral\"",
+            "TOTALDISCS": "1",
+            "TOTALTRACKS": "6",
+            "DATE": "1969",
+            "DISCNUMBER": "1",
+            "DESCRIPTION": "https://archive.org/details/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar",
+            "ARTIST": "The Mormon Tabernacle Choir; Richard P. Condie; The Philadelphia Orchestra; Eugene Ormandy",
+            "ALBUMARTIST": "Ludwig Van Beethoven",
+            "GENRE": [
+              "Classical",
+              "Romantic",
+              "Classical"
+            ],
+            "TRACKNUMBER": "6"
+          }
+        }
+      ],
+      "target_dir": "disc1",
+      "segmenter_version": "1.0.1",
+      "archivelp_version": "2.2.53lp",
+      "file": "disc1/lp_beethovens-greatest-hits_ludwig-van-beethoven-eugene-ormandy-leonar_disc1side2.flac"
+    }
+  ],
+  "server": "ia802903.us.archive.org",
+  "uniq": 140032944,
+  "workable_servers": [
+    "ia802903.us.archive.org",
+    "ia902903.us.archive.org"
+  ]
+}

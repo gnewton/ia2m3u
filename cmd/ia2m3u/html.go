@@ -201,34 +201,34 @@ func collectCopies(files []ia.File, minAudioLengthSeconds int64) map[string][]*i
 		f := files[i]
 
 		if _, ok := FileFormats[f.Format]; ok {
+			audioLengthTooShort(f.Length, minAudioLengthSeconds)
 			//if minAudioLengthFilterOut(f.Length, minAudioLengthSeconds){
-			if false{
+			if false {
 				//
-			}else{
-			// Assumes JSON ia.File ordering reflects track ordering. Might not be true for all
-			f.TrackOrder = i
-			baseName := makeFileBaseName(f.Name, f.Format)
-
-			var copyFiles []*ia.File
-			var ok bool
-			if copyFiles, ok = nameCopies[baseName]; !ok {
-				copyFiles = []*ia.File{&f}
 			} else {
-				copyFiles = append(copyFiles, &f)
+				// Assumes JSON ia.File ordering reflects track ordering. Might not be true for all
+				f.TrackOrder = i
+				baseName := makeFileBaseName(f.Name, f.Format)
+
+				var copyFiles []*ia.File
+				var ok bool
+				if copyFiles, ok = nameCopies[baseName]; !ok {
+					copyFiles = []*ia.File{&f}
+				} else {
+					copyFiles = append(copyFiles, &f)
+				}
+				nameCopies[baseName] = copyFiles
 			}
-							nameCopies[baseName] = copyFiles
-						}
 		}
 	}
-
 	return nameCopies
 }
 
-func findWantedCopies(copies map[string][]*ia.File, wantedFormats []string) []*ia.File {
+func findWantedCopies(id string, copies map[string][]*ia.File, wantedFormats []string) []*ia.File {
 	var wantedCopies []*ia.File
 
 	for _, files := range copies {
-		wantedCopy := findWantedCopy(files, wantedFormats)
+		wantedCopy := findWantedCopy(id, files, wantedFormats)
 		if wantedCopy != nil {
 			wantedCopies = append(wantedCopies, wantedCopy)
 		}
@@ -237,15 +237,23 @@ func findWantedCopies(copies map[string][]*ia.File, wantedFormats []string) []*i
 	return wantedCopies
 }
 
-func findWantedCopy(files []*ia.File, wantedFormats []string) *ia.File {
+func findWantedCopy(id string, files []*ia.File, wantedFormats []string) *ia.File {
 	for _, format := range wantedFormats {
 		for _, file := range files {
 			if file.Format == format {
-				return file
+				if RemoteFileExistsViaHttpHEAD(id, file.Name) {
+					return file
+				} else {
+					return nil
+				}
 			}
 		}
 	}
 	return nil
+}
+
+func RemoteFileExistsViaHttpHEAD(id, fileName string) bool {
+	return true
 }
 
 func makeFileBaseName(s string, format string) string {
