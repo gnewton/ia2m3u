@@ -229,7 +229,7 @@ func main() {
 
 			total, err := search.Total()
 			if err != nil {
-				log.Fatal(err)
+				log.Println("Search.Total()", err)
 			}
 			if args.Verbose {
 				log.Println("")
